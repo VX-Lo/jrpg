@@ -4,9 +4,9 @@
 
 ## Current state
 - **Phase:** 1 — determinism substrate
-- **Status:** in progress
-- **Last action:** Built the event log (`src/log/`: writer, reader, replayer, serializer) and the OraclePort (`src/oracle/`: LiveOracle, ReplayOracle, mock counting source). Gate 3 (oracle replay never invokes source) passing, plus general log unit tests and a round-trip test covering BigInt payloads. 19 tests passing total, tsc/eslint clean.
-- **Next action:** Build the dev harness (`constructState` + CLI) in `src/harness/`, then write Gate 1 (byte-identical replay across many seeds) and Gate 4 (already covered by log round-trip test, but add a full state-replay round-trip through the harness) and Gate 5 automation (a test that shells to eslint on a fixture and asserts nonzero exit).
+- **Status:** gates passing
+- **Last action:** Built the dev harness (`src/harness/`: `constructState`, a Phase-1-only demo scenario, and a CLI with `generate`/`replay`/`diff`). Wrote Gate 1 (byte-identical replay across 9 varied seeds, including bigint/number/string/negative/>2^53/2^64-1) and Gate 5 (automated: writes a deliberate DOM/React-importing fixture into `src/`, shells out to `eslint` and `tsc`, asserts both fail, then deletes the fixture in a `finally`). Added `.github/workflows/ci.yml` running lint + typecheck + tests on push/PR. All 5 gates green: 31 tests passing, tsc/eslint clean, CLI manually verified (same seed → byte-identical logs; different seed → diverges at a specific byte offset).
+- **Next action:** Phase 1 is functionally complete. Before calling it fully done: push to origin, confirm CI is green there (not just locally), and get user sign-off before starting Phase 2 (worldgen) per the scope fence.
 
 ## Project rules (never violate)
 1. Determinism: same seed + inputs = bit-identical log. Tested, not assumed.
@@ -16,43 +16,59 @@
 5. No Math.random(), no Date.now(), no ambient state in the engine. Ever.
 
 ## Architecture
-- Monorepo root uses npm workspaces (no extra tooling needed at this size).
+- Monorepo root uses npm workspaces (no extra tooling needed at this size). Root `package.json` has `"type": "module"`.
 - `packages/engine` — pure TypeScript engine package. No DOM lib, no React. Node-testable only.
-  - `src/rng/` — SplitMix64 PRNG + key-hashed substreams
-  - `src/log/` — event log writer/reader/replayer/serializer
-  - `src/oracle/` — OraclePort interface + mock oracle
-  - `src/harness/` — constructState + CLI entry point
-  - `test/` — vitest test suites, including the Phase 1 gates
-- Substream key convention: `domain:scope:id:purpose`, e.g. `worldgen:tier:5:regions`. Keys are hashed directly (via FNV-1a 64-bit, see below) into a SplitMix64 seed — no sequential derivation, ever. See `packages/engine/src/rng/substream.ts`.
-- Hash function: FNV-1a, 64-bit, integer-only (BigInt), operating on UTF-8 bytes of the key string. Chosen because it's a few lines of pure integer arithmetic with a fixed, documented spec — no platform-dependent float or crypto-library behavior, and its output is unambiguous forever.
-- PRNG core: SplitMix64 (integer/BigInt arithmetic only). `masterSeed: bigint`. `rng.substream(key: string): PRNG` derives a new SplitMix64 state via `fnv1a64(masterSeed_bytes || key_bytes)` — the child stream's seed depends on both master seed and key, independent of call order or sibling substreams.
-- Event log shape: `{ seq: number, tick: number, type: string, payload: unknown }`. `seq` monotonic per-log. `tick` is the universal game clock — drives all downstream time-based derivation (faction updates, market drift, event rolls) starting Phase 2+.
-- Ports defined so far: `OraclePort<In, Out>` with `query(input): Out`. Live mode invokes source + logs an `oracle` event; replay mode reads the same event and never invokes source.
+  - `src/rng/` — `fnv1a.ts` (FNV-1a 64-bit hash), `splitmix64.ts` (`Rng` class + `createRng`), `index.ts` (barrel)
+  - `src/log/` — `types.ts` (`Event`), `writer.ts` (`EventLogWriter`), `reader.ts` (`EventLogReader`), `replayer.ts` (`replay`), `serializer.ts` (`serializeLog`/`deserializeLog`, BigInt-safe), `index.ts`
+  - `src/oracle/` — `types.ts` (`OraclePort`), `liveOracle.ts`, `replayOracle.ts`, `mockOracle.ts` (`createCountingOracleSource`), `index.ts`
+  - `src/harness/` — `types.ts` (`GameState`/`TierSpec`/`PartySpec` stubs), `state.ts` (`constructState`), `demoScenario.ts` (Phase-1-only fixture, NOT game content), `cli.ts` (generate/replay/diff), `index.ts`
+  - `test/` — vitest suites: `rng.test.ts`, `log.test.ts`, `gate1.replay.test.ts`, `gate2.perturbation.test.ts`, `gate3.oracle.test.ts`, `gate5.boundary.test.ts` (Gate 4 covered inside `log.test.ts`'s round-trip tests)
+- `.github/workflows/ci.yml` — runs `eslint .`, `npm run build --workspace packages/engine` (tsc), `npm run test --workspace packages/engine` (vitest) on push to main and on PRs. Uses Node 20 (local dev used Node 18.20.8 — works, but some devDependency engines warn below 20; CI pins 20 to be clean).
+- Substream key convention: `domain:scope:id:purpose`, e.g. `worldgen:tier:5:regions`. Keys are hashed directly (via FNV-1a 64-bit) into a SplitMix64 seed — no sequential derivation, ever.
+- Hash function: FNV-1a, 64-bit, integer-only (BigInt), operating on UTF-8 bytes. A few lines of pure integer arithmetic with a fixed, documented spec — no platform-dependent float or crypto-library behavior. `deriveSeed(parentSeed, key)` hashes `u64ToBytes(parentSeed) || utf8(key)`.
+- PRNG core: SplitMix64 (BigInt arithmetic only, masked to 64 bits throughout). Each `Rng` instance stores its own immutable `seed` separately from its mutable advancing `state` — `substream(key)` derives the child from `this.seed` (never from wherever the draw cursor happens to be), which is *why* Gate 2 holds: independent of call count and call order.
+- `createRng(seed)` accepts `bigint | number | string` — numbers/bigints seed directly (masked to 64 bits), strings are hashed via `deriveSeed(0n, seed)`.
+- `nextInt(bound)` uses rejection sampling against 2^64 (not modulo) for unbiased output — still fully deterministic, just consumes a variable, seed-determined number of draws.
+- Event log shape: `{ seq: number, tick: number, type: string, payload: unknown }`. `seq` assigned monotonically at append time by `EventLogWriter`; `tick` is the universal game clock — drives all downstream time-based derivation (faction updates, market drift, event rolls) starting Phase 2+. Log is append-only; nothing is ever mutated or removed post-append.
+- Serializer tags BigInt values as `{ __bigint__: "123" }` via a JSON replacer/reviver, since payloads legitimately contain BigInts (seeds, 64-bit draws) and plain `JSON.stringify` throws on them.
+- Ports defined so far: `OraclePort<In, Out>` with `query(input): Out`. `LiveOracle` invokes the source and appends `{input, output}` under a caller-chosen event `type`; `ReplayOracle` reads events of that same type back in order and throws (does not silently fall back to live) if queried past what was logged.
+- `GameState` stub shape: `{ seed, rng, log, tick, tier, partySpec }`. `constructState(seed, tier, partySpec)` builds it fresh — no persisted world, only seed + empty log.
+- CLI (`packages/engine` → `npm run cli -- <command>` or `npx tsx src/harness/cli.ts <command>`):
+  - `generate <seed> [outFile]` — constructs state, runs the Phase-1 demo scenario, writes/prints the serialized log
+  - `replay <logFile>` — deserializes a log and folds it into a trivial `{eventCount, lastTick}` summary via `replay()`
+  - `diff <fileA> <fileB>` — byte-compares two serialized logs, reports first differing offset, exit code 0/1
 
 ## Phase 1 deliverables
 - [x] Splittable PRNG, key-hashed substreams (NOT sequential splitting)
 - [x] Event log: writer, reader, replayer, serializer
 - [x] OraclePort + mock oracle
-- [ ] Dev harness: constructState(seed, tier, partySpec) + CLI
+- [x] Dev harness: constructState(seed, tier, partySpec) + CLI
 
 ## Gates (Phase 1 is not done until all pass in CI)
-- [ ] Gate 1: byte-identical replay across many seeds
-- [x] Gate 2: PERTURBATION TEST — new substream consumer does not perturb existing output
-- [x] Gate 3: oracle replay never invokes the source
-- [x] Gate 4: log serialize round-trip
-- [ ] Gate 5: boundary lint fails on DOM/React import
+- [x] Gate 1: byte-identical replay across many seeds — `test/gate1.replay.test.ts`, 9 seeds incl. edge cases (negative, >2^53, 2^64-1)
+- [x] Gate 2: PERTURBATION TEST — new substream consumer does not perturb existing output — `test/gate2.perturbation.test.ts`, 4 sub-tests incl. order-independence
+- [x] Gate 3: oracle replay never invokes the source — `test/gate3.oracle.test.ts`, asserts a `vi.fn()` spy call count stays flat across replay, plus a hard-error test for over-querying
+- [x] Gate 4: log serialize round-trip — covered in `test/log.test.ts` (BigInt payloads included)
+- [x] Gate 5: boundary lint fails on DOM/React import — `test/gate5.boundary.test.ts`, writes a real violating fixture, shells to `eslint`/`tsc`, asserts nonzero exit, deletes fixture in `finally`
+- All verified locally: 31 tests passing, `tsc --noEmit` clean, `eslint .` clean. `.github/workflows/ci.yml` wires the same three checks into CI — not yet confirmed green on GitHub's runners (only run locally so far).
 
 ## Decisions made
 - 2026-07-17 — Repo was essentially empty (only README + .gitignore). Starting Phase 1 from scratch per prompt.
 - 2026-07-17 — Using npm workspaces (already have npm 10.8.2 / node 18.20.8 available) rather than pnpm/yarn, to minimize new tooling surface. `packages/engine` is the only package created this phase.
-- 2026-07-17 — Boundary enforcement via `tsconfig.json` `"lib": ["ES2022"]` (no `"DOM"`) on the engine package, PLUS an ESLint `no-restricted-imports`/`import/no-nodejs-modules`-style rule blocking `react`, `react-dom`, and any DOM global usage. Belt and suspenders: TS lib omission catches DOM *type* usage (e.g. `document.foo`), ESLint catches `import`/`require` of react packages.
+- 2026-07-17 — Boundary enforcement via `tsconfig.json` `"lib": ["ES2022"]` (no `"dom"`) on the engine package, PLUS an ESLint `no-restricted-imports`/`no-restricted-globals`/`no-restricted-syntax` rule blocking `react`/`react-dom`, DOM globals (`window`/`document`/`navigator`/`localStorage`/`sessionStorage`), and `Math.random()`/`Date.now()`/`new Date()`. Belt and suspenders: TS lib omission catches DOM *type* usage, ESLint catches imports and nondeterminism calls that don't require DOM types to fail (e.g. `Math.random()` is valid under any lib).
 - 2026-07-17 — Hash function: FNV-1a 64-bit over UTF-8 bytes, BigInt arithmetic, no crypto module. Simple, stable, integer-only, platform-independent forever.
 - 2026-07-17 — Test runner: vitest (fast, ESM-native, works headlessly in Node — fits "pure TS, no browser" constraint).
-- 2026-07-17 — Root `package.json` has `"type": "module"` so the ESLint flat config (`eslint.config.js`) loads as ESM under Node 18. Boundary rule proven live: a throwaway `packages/engine/src/_boundary_probe.ts` importing `react` and using `document`/`window`/`Math.random()`/`Date.now()` failed both `eslint` (5 errors) and `tsc --noEmit` (DOM globals unresolvable since `lib` has no `"dom"`), then was deleted. Belt-and-suspenders confirmed working before any real code was written.
+- 2026-07-17 — Root `package.json` has `"type": "module"` so the ESLint flat config (`eslint.config.js`) loads as ESM under Node 18. Boundary rule proven live twice: once manually via a throwaway probe file (deleted after confirming failure), and again automatically in `test/gate5.boundary.test.ts` (writes fixture → asserts eslint/tsc both fail → deletes fixture, every CI run).
+- 2026-07-17 — `Rng.substream(key)` derives from the stream's own immutable `seed` field, not its mutable `state` cursor — the specific design choice that makes Gate 2 hold (independent of draw count/order).
+- 2026-07-17 — `nextInt` uses rejection sampling (not modulo) for unbiased results; still deterministic, since the number of extra draws consumed is itself a pure function of the seed.
+- 2026-07-17 — CLI implemented with Node's `node:fs`/`node:child_process` etc. This is I/O at the harness boundary (reading seed args, writing/reading log files), not part of the pure simulation core (`state.ts`/`demoScenario.ts` remain pure) — consistent with "purity in the core, I/O at the edges."
+- 2026-07-17 — `demoScenario.ts` is explicitly a Phase-1-only fixture to give the CLI/gates something to generate against, since no real worldgen/combat exists yet. It is not game content and should be deleted/replaced once Phase 2+ lands.
+- 2026-07-17 — CI pinned to Node 20 (vs. locally-available Node 18.20.8) because one ESLint transitive devDependency (`eslint-visitor-keys@5`) warns below Node 20; everything still worked on 18 locally, but CI uses the cleaner version.
 
 ## Stubs / deferred
-- `tier` and `partySpec` params to `constructState` are near-empty stubs (Phase 2 fills world/tier meaning, Phase 5 fills party/stats).
-- No real Oracle implementation (e.g. chess engine) exists yet — only the mock used to prove the port.
+- `tier: TierSpec` and `partySpec: PartySpec` (`src/harness/types.ts`) are near-empty stubs (Phase 2 fills world/tier meaning, Phase 5 fills party/stats).
+- No real Oracle implementation (e.g. chess engine) exists yet — only `createCountingOracleSource` used to prove the port in tests.
+- `demoScenario.ts` / CLI's `generate` command produce fixture data only (region/initiative-shaped rolls from named substreams) — not real worldgen or combat, which are out of scope per the Phase 1 scope fence.
 
 ## Known issues
-- (none yet)
+- CI workflow (`.github/workflows/ci.yml`) has not yet been confirmed to actually pass on GitHub's hosted runners — only equivalent commands run locally so far. Should be verified on the first push.

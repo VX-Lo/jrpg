@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Lint (boundary enforcement)
+        run: npx eslint .
+      - name: Typecheck engine
+        run: npm run build --workspace packages/engine
+      - name: Test engine (Gates 1-5)
+        run: npm run test --workspace packages/engine
