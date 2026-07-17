@@ -5,8 +5,8 @@
 ## Current state
 - **Phase:** 1 — determinism substrate
 - **Status:** in progress
-- **Last action:** Wrote Gate 2 (perturbation test, `test/gate2.perturbation.test.ts`) against the not-yet-built PRNG API first, then implemented `src/rng/fnv1a.ts` (FNV-1a 64-bit) + `src/rng/splitmix64.ts` (SplitMix64 `Rng` class + `createRng`). All 4 perturbation sub-tests pass, plus 7 general RNG unit tests. tsc and eslint both clean.
-- **Next action:** Implement the event log (writer/reader/replayer/serializer) in `src/log/`, then Gate 1 (byte-identical replay) and Gate 4 (round-trip) against it.
+- **Last action:** Built the event log (`src/log/`: writer, reader, replayer, serializer) and the OraclePort (`src/oracle/`: LiveOracle, ReplayOracle, mock counting source). Gate 3 (oracle replay never invokes source) passing, plus general log unit tests and a round-trip test covering BigInt payloads. 19 tests passing total, tsc/eslint clean.
+- **Next action:** Build the dev harness (`constructState` + CLI) in `src/harness/`, then write Gate 1 (byte-identical replay across many seeds) and Gate 4 (already covered by log round-trip test, but add a full state-replay round-trip through the harness) and Gate 5 automation (a test that shells to eslint on a fixture and asserts nonzero exit).
 
 ## Project rules (never violate)
 1. Determinism: same seed + inputs = bit-identical log. Tested, not assumed.
@@ -31,15 +31,15 @@
 
 ## Phase 1 deliverables
 - [x] Splittable PRNG, key-hashed substreams (NOT sequential splitting)
-- [ ] Event log: writer, reader, replayer, serializer
-- [ ] OraclePort + mock oracle
+- [x] Event log: writer, reader, replayer, serializer
+- [x] OraclePort + mock oracle
 - [ ] Dev harness: constructState(seed, tier, partySpec) + CLI
 
 ## Gates (Phase 1 is not done until all pass in CI)
 - [ ] Gate 1: byte-identical replay across many seeds
 - [x] Gate 2: PERTURBATION TEST — new substream consumer does not perturb existing output
-- [ ] Gate 3: oracle replay never invokes the source
-- [ ] Gate 4: log serialize round-trip
+- [x] Gate 3: oracle replay never invokes the source
+- [x] Gate 4: log serialize round-trip
 - [ ] Gate 5: boundary lint fails on DOM/React import
 
 ## Decisions made
