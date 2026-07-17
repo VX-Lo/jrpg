@@ -4,9 +4,9 @@
 
 ## Current state
 - **Phase:** 1 — determinism substrate
-- **Status:** gates passing
-- **Last action:** Built the dev harness (`src/harness/`: `constructState`, a Phase-1-only demo scenario, and a CLI with `generate`/`replay`/`diff`). Wrote Gate 1 (byte-identical replay across 9 varied seeds, including bigint/number/string/negative/>2^53/2^64-1) and Gate 5 (automated: writes a deliberate DOM/React-importing fixture into `src/`, shells out to `eslint` and `tsc`, asserts both fail, then deletes the fixture in a `finally`). Added `.github/workflows/ci.yml` running lint + typecheck + tests on push/PR. All 5 gates green: 31 tests passing, tsc/eslint clean, CLI manually verified (same seed → byte-identical logs; different seed → diverges at a specific byte offset).
-- **Next action:** Phase 1 is functionally complete. Before calling it fully done: push to origin, confirm CI is green there (not just locally), and get user sign-off before starting Phase 2 (worldgen) per the scope fence.
+- **Status:** Phase 1 complete — all gates passing locally AND confirmed green in CI (GitHub Actions run 29621644363, conclusion: success, on push to main at commit aa4ac84).
+- **Last action:** Pushed 4 `phase1:` commits to `origin/main`. Confirmed the CI workflow run for that push completed with `conclusion: success` via the GitHub Actions API.
+- **Next action:** Awaiting user direction to begin Phase 2 (worldgen/regions/tiers/settlements) per the scope fence — nothing in Phase 2+ should start without explicit go-ahead.
 
 ## Project rules (never violate)
 1. Determinism: same seed + inputs = bit-identical log. Tested, not assumed.
@@ -50,7 +50,7 @@
 - [x] Gate 3: oracle replay never invokes the source — `test/gate3.oracle.test.ts`, asserts a `vi.fn()` spy call count stays flat across replay, plus a hard-error test for over-querying
 - [x] Gate 4: log serialize round-trip — covered in `test/log.test.ts` (BigInt payloads included)
 - [x] Gate 5: boundary lint fails on DOM/React import — `test/gate5.boundary.test.ts`, writes a real violating fixture, shells to `eslint`/`tsc`, asserts nonzero exit, deletes fixture in `finally`
-- All verified locally: 31 tests passing, `tsc --noEmit` clean, `eslint .` clean. `.github/workflows/ci.yml` wires the same three checks into CI — not yet confirmed green on GitHub's runners (only run locally so far).
+- Verified locally (31 tests passing, `tsc --noEmit` clean, `eslint .` clean) AND in CI: `.github/workflows/ci.yml` ran on push to main and completed with `conclusion: success` (run 29621644363).
 
 ## Decisions made
 - 2026-07-17 — Repo was essentially empty (only README + .gitignore). Starting Phase 1 from scratch per prompt.
@@ -71,4 +71,4 @@
 - `demoScenario.ts` / CLI's `generate` command produce fixture data only (region/initiative-shaped rolls from named substreams) — not real worldgen or combat, which are out of scope per the Phase 1 scope fence.
 
 ## Known issues
-- CI workflow (`.github/workflows/ci.yml`) has not yet been confirmed to actually pass on GitHub's hosted runners — only equivalent commands run locally so far. Should be verified on the first push.
+- (none — CI confirmed green on GitHub's hosted runners, run 29621644363)
