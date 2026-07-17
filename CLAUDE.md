@@ -5,8 +5,8 @@
 ## Current state
 - **Phase:** 1 — determinism substrate
 - **Status:** in progress
-- **Last action:** Scaffolded npm workspace + `packages/engine`. Boundary enforced two ways: ESLint flat config (`eslint.config.js`, `no-restricted-imports`/`no-restricted-globals`/`no-restricted-syntax` blocking react/react-dom, window/document/etc, Math.random(), Date.now()) and `tsconfig.json` `lib: ["ES2022"]` (no DOM lib, so DOM globals are unresolvable types too). Proved both fail on a deliberate probe file importing react + using document/window/Math.random/Date.now, then deleted the probe.
-- **Next action:** Write Gate 2 (perturbation test) against the not-yet-built PRNG API, then implement SplitMix64 + FNV-1a substreams to make it pass.
+- **Last action:** Wrote Gate 2 (perturbation test, `test/gate2.perturbation.test.ts`) against the not-yet-built PRNG API first, then implemented `src/rng/fnv1a.ts` (FNV-1a 64-bit) + `src/rng/splitmix64.ts` (SplitMix64 `Rng` class + `createRng`). All 4 perturbation sub-tests pass, plus 7 general RNG unit tests. tsc and eslint both clean.
+- **Next action:** Implement the event log (writer/reader/replayer/serializer) in `src/log/`, then Gate 1 (byte-identical replay) and Gate 4 (round-trip) against it.
 
 ## Project rules (never violate)
 1. Determinism: same seed + inputs = bit-identical log. Tested, not assumed.
@@ -30,14 +30,14 @@
 - Ports defined so far: `OraclePort<In, Out>` with `query(input): Out`. Live mode invokes source + logs an `oracle` event; replay mode reads the same event and never invokes source.
 
 ## Phase 1 deliverables
-- [ ] Splittable PRNG, key-hashed substreams (NOT sequential splitting)
+- [x] Splittable PRNG, key-hashed substreams (NOT sequential splitting)
 - [ ] Event log: writer, reader, replayer, serializer
 - [ ] OraclePort + mock oracle
 - [ ] Dev harness: constructState(seed, tier, partySpec) + CLI
 
 ## Gates (Phase 1 is not done until all pass in CI)
 - [ ] Gate 1: byte-identical replay across many seeds
-- [ ] Gate 2: PERTURBATION TEST — new substream consumer does not perturb existing output
+- [x] Gate 2: PERTURBATION TEST — new substream consumer does not perturb existing output
 - [ ] Gate 3: oracle replay never invokes the source
 - [ ] Gate 4: log serialize round-trip
 - [ ] Gate 5: boundary lint fails on DOM/React import
