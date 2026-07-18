@@ -1,10 +1,19 @@
 #!/usr/bin/env node
 import { readFileSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { join, dirname } from "node:path";
 import { constructState } from "./state.js";
 import { prettyPrintTier } from "./prettyPrintTier.js";
+import { prettyPrintQuestGraph, prettyPrintSolverResults, prettyPrintArcs } from "./prettyPrintQuestGraph.js";
 import { worldgen } from "../worldgen/worldgen.js";
 import { serializeTier } from "../worldgen/serialize.js";
-import { serializeLog, deserializeLog, replay, type Event } from "../log/index.js";
+import { serializeLog, deserializeLog, replay, EventLogWriter, type Event } from "../log/index.js";
+import { loadContentFromDir } from "../content/loader.js";
+import { buildTierQuestGraph } from "../questgraph/questgraph.js";
+import { serializeQuestGraph } from "../questgraph/serialize.js";
+import { solveA } from "../questgraph/solverA.js";
+import { solveB } from "../questgraph/solverB.js";
+import { buildTierArcs } from "../questgraph/arcs/tierArcs.js";
 
 /**
  * Headless CLI for the engine — how every future gate gets exercised
@@ -78,6 +87,48 @@ function cmdGen(args: string[]): void {
   }
 }
 
+const DEFAULT_CONTENT_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "content");
+
+function cmdQuest(args: string[]): void {
+  const flags = parseFlags(args);
+  const seedArg = flags.seed;
+  const tierArg = flags.tier;
+  if (typeof seedArg !== "string" || typeof tierArg !== "string") {
+    console.error("usage: quest --seed <seed> --tier <n> [--print] [--content <dir>]");
+    process.exit(1);
+  }
+  const tierIndex = Number(tierArg);
+  if (!Number.isInteger(tierIndex) || tierIndex < 1) {
+    console.error(`--tier must be a positive integer, got "${tierArg}"`);
+    process.exit(1);
+  }
+  const contentDir = typeof flags.content === "string" ? flags.content : DEFAULT_CONTENT_DIR;
+
+  const content = loadContentFromDir(contentDir);
+  const tier = worldgen(parseSeed(seedArg), tierIndex);
+  const graph = buildTierQuestGraph(tier, content);
+  const resultA = solveA(tier, graph);
+  const resultB = solveB(tier, graph);
+  const log = new EventLogWriter();
+  const arcs = buildTierArcs(tier, log, 0);
+
+  if (flags.print) {
+    console.log(prettyPrintQuestGraph(graph));
+    console.log(prettyPrintSolverResults(resultA, resultB));
+    console.log("");
+    console.log(prettyPrintArcs(arcs));
+  } else {
+    console.log(
+      JSON.stringify({
+        questGraph: JSON.parse(serializeQuestGraph(graph)),
+        solverA: resultA,
+        solverB: resultB,
+        arcs,
+      }),
+    );
+  }
+}
+
 function cmdReplay(args: string[]): void {
   const [logFile] = args;
   if (!logFile) {
@@ -127,8 +178,10 @@ function main(): void {
       return cmdDiff(rest);
     case "gen":
       return cmdGen(rest);
+    case "quest":
+      return cmdQuest(rest);
     default:
-      console.error("usage: hollowmark-engine <generate|replay|diff|gen> ...");
+      console.error("usage: hollowmark-engine <generate|replay|diff|gen|quest> ...");
       process.exit(1);
   }
 }
