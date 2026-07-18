@@ -1,0 +1,13 @@
+# shift_queue primitive, martial. CTB manipulation — Phase 5 wires the
+# actual queue; the primitive and its params are defined here.
+id = "ability:delay-strike"
+name = "Delay Strike"
+tags = ["martial"]
+primary_domain_tag = "martial"
+target_shape = "one"
+tick_cost = 50
+resource_cost = 3
+
+[[effects]]
+primitive = "shift_queue"
+params = { direction = "back", amount = 200 }

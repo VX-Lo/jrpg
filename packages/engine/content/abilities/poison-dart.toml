@@ -1,0 +1,14 @@
+# apply_status primitive, poison. Warden signature ability. Status
+# always applies; duration/magnitude scale against resist at runtime
+# (Phase 5) — never a hit/miss roll.
+id = "ability:poison-dart"
+name = "Poison Dart"
+tags = ["poison"]
+primary_domain_tag = "poison"
+target_shape = "one"
+tick_cost = 90
+resource_cost = 4
+
+[[effects]]
+primitive = "apply_status"
+params = { status = "poison", base_duration = 3, base_magnitude = 5 }

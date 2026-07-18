@@ -1,0 +1,13 @@
+# buff primitive, support. Reachable by any job with "support" in
+# allowed_tags (currently Mage).
+id = "ability:haste-self"
+name = "Haste"
+tags = ["support"]
+primary_domain_tag = "support"
+target_shape = "self"
+tick_cost = 60
+resource_cost = 6
+
+[[effects]]
+primitive = "buff"
+params = { stat = "AGI", magnitude = 4, duration_ticks = 300 }

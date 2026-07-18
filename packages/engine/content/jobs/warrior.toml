@@ -1,0 +1,15 @@
+# Martial front-liner fixture.
+id = "job:warrior"
+name = "Warrior"
+primary_tag = "martial"
+allowed_tags = ["martial", "defense"]
+signature_abilities = ["ability:cleave"]
+equip_proficiencies = ["weapon:sword", "weapon:mace"]
+default_row = "front"
+
+[stat_growth]
+STR = 3
+INT = 0
+VIT = 2
+AGI = 1
+PER = 0

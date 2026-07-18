@@ -1,0 +1,15 @@
+# Caster fixture.
+id = "job:mage"
+name = "Mage"
+primary_tag = "fire"
+allowed_tags = ["fire", "frost", "shadow", "support"]
+signature_abilities = ["ability:fireball"]
+equip_proficiencies = ["weapon:staff"]
+default_row = "back"
+
+[stat_growth]
+STR = 0
+INT = 3
+VIT = 1
+AGI = 1
+PER = 1

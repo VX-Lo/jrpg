@@ -1,0 +1,13 @@
+# heal primitive, support/holy. Not a signature ability — reachable via
+# tag overlap by any job with "support" or "holy" in allowed_tags.
+id = "ability:heal-light"
+name = "Light Heal"
+tags = ["support", "holy"]
+primary_domain_tag = "holy"
+target_shape = "one"
+tick_cost = 100
+resource_cost = 8
+
+[[effects]]
+primitive = "heal"
+params = { power_formula = { base = { kind = "primary_stat", stat = "INT" }, multipliers = [ { kind = "constant", value = 1.0 } ] } }

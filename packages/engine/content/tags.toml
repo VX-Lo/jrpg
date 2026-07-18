@@ -1,0 +1,61 @@
+# One flat shared tag vocabulary (Deliverable 3). Same tags serve ability
+# domain/role, weakness mapping (Phase 5), and puzzle-keying by region
+# (Phase 2's kernels). This is a fixture subset for Phase 3's fixture
+# content — the full ~30 candidate list is documented in CLAUDE.md for
+# the later content pass.
+
+[[tags]]
+id = "martial"
+category = "role"
+
+[[tags]]
+id = "defense"
+category = "role"
+
+[[tags]]
+id = "support"
+category = "role"
+
+[[tags]]
+id = "control"
+category = "role"
+
+[[tags]]
+id = "fire"
+category = "domain"
+
+[[tags]]
+id = "frost"
+category = "domain"
+
+[[tags]]
+id = "holy"
+category = "domain"
+
+[[tags]]
+id = "shadow"
+category = "domain"
+
+[[tags]]
+id = "poison"
+category = "domain"
+
+[[tags]]
+id = "physical"
+category = "domain"
+
+[[tags]]
+id = "undead"
+category = "domain"
+
+[[tags]]
+id = "aquatic"
+category = "domain"
+
+[[tags]]
+id = "ashborn"
+category = "domain"
+
+[[tags]]
+id = "silver"
+category = "domain"

@@ -1,0 +1,12 @@
+# damage primitive, fire. Mage signature ability.
+id = "ability:fireball"
+name = "Fireball"
+tags = ["fire"]
+primary_domain_tag = "fire"
+target_shape = "one"
+tick_cost = 120
+resource_cost = 10
+
+[[effects]]
+primitive = "damage"
+params = { power_formula = { base = { kind = "primary_stat", stat = "INT" }, multipliers = [ { kind = "elemental", value = 1.3 } ] } }

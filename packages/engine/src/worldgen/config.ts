@@ -130,3 +130,32 @@ export const THREAT_ARCHETYPE_IDS: readonly string[] = [
   "archetype:ambusher",
   "archetype:sentinel",
 ];
+
+// ---------------------------------------------------------------------
+// Phase 3 — content / combat calibration
+//
+// Lives here rather than a separate module because this file is the
+// project's one calibration home — "add it there, don't scatter it."
+// ---------------------------------------------------------------------
+
+/**
+ * Hard loadout size: how many abilities a character can have equipped at
+ * once, regardless of how many they've unlocked. This is the
+ * deckbuilder tension — access to abilities is generous (tag overlap,
+ * see content/access.ts), but the equip cap forces a choice among them.
+ * UNCALIBRATED exact value (6-8 is the suggested range) but the
+ * mechanism — a hard cap all ability tiers compete for — is not
+ * negotiable.
+ */
+export const EQUIP_CAP = 6;
+
+/**
+ * Coefficient for job_level_bonus in the ability-power formula:
+ * jobLevelBonus = jobLevel * JOB_LEVEL_BONUS_PER_LEVEL, applied only
+ * when the ability's primary domain tag matches the job's primary tag
+ * (the mastery mechanic). Added ADDITIVELY to the relevant stat, never
+ * multiplicatively — see content/formula.ts and rule 10 in CLAUDE.md.
+ * UNCALIBRATED — depends on the same open run-length question as
+ * BAND_GROWTH/BAND_BASE above.
+ */
+export const JOB_LEVEL_BONUS_PER_LEVEL = 1;

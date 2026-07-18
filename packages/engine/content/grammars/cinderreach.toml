@@ -1,0 +1,10 @@
+id = "grammar:cinderreach:flavor"
+kernel_id = "kernel:cinderreach"
+
+[rules]
+origin = ["The #kernelRoot#air tastes of #mood#.", "A #kernelRoot#glow lights the ridge."]
+mood = [
+  { text = "old iron", weight = 2 },
+  { text = "banked fire", weight = 1 },
+  { text = "spent ash", weight = 1 },
+]

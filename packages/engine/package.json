@@ -13,6 +13,9 @@
     "test:watch": "vitest",
     "cli": "tsx src/harness/cli.ts"
   },
+  "dependencies": {
+    "smol-toml": "^1.7.0"
+  },
   "devDependencies": {
     "@types/node": "^20.14.0",
     "tsx": "^4.19.0",

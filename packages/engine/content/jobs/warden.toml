@@ -1,0 +1,15 @@
+# Hybrid fixture — martial/control ranger, poison-primary.
+id = "job:warden"
+name = "Warden"
+primary_tag = "poison"
+allowed_tags = ["poison", "martial", "control"]
+signature_abilities = ["ability:poison-dart"]
+equip_proficiencies = ["weapon:bow"]
+default_row = "back"
+
+[stat_growth]
+STR = 1
+INT = 1
+VIT = 1
+AGI = 3
+PER = 2

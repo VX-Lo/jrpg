@@ -1,0 +1,12 @@
+# damage primitive, martial. Warrior signature ability.
+id = "ability:cleave"
+name = "Cleave"
+tags = ["martial"]
+primary_domain_tag = "martial"
+target_shape = "row"
+tick_cost = 100
+resource_cost = 0
+
+[[effects]]
+primitive = "damage"
+params = { power_formula = { base = { kind = "primary_stat", stat = "STR" }, multipliers = [ { kind = "constant", value = 1.2 } ] } }

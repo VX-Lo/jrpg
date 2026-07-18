@@ -1,0 +1,13 @@
+# debuff primitive, control. Reachable by any job with "control" in
+# allowed_tags (currently Warden).
+id = "ability:weaken"
+name = "Weaken"
+tags = ["control"]
+primary_domain_tag = "control"
+target_shape = "one"
+tick_cost = 70
+resource_cost = 5
+
+[[effects]]
+primitive = "debuff"
+params = { stat = "STR", magnitude = 3, duration_ticks = 240 }

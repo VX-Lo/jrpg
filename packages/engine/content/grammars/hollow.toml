@@ -1,0 +1,10 @@
+id = "grammar:hollow:flavor"
+kernel_id = "kernel:hollow"
+
+[rules]
+origin = ["The #kernelRoot#passage carries #mood#.", "A #kernelRoot#draft breathes from below."]
+mood = [
+  { text = "an old echo", weight = 2 },
+  { text = "settling stone", weight = 1 },
+  { text = "something waiting", weight = 1 },
+]

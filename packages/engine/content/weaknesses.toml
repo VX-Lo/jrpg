@@ -1,0 +1,16 @@
+# The ONE authored table mapping a tag to its weakness tag. A creature
+# with multiple tags picks up multiple entries — that composition IS the
+# obfuscation mechanism (see threatArchetypes.toml's ambusher). There is
+# no hidden-weakness field anywhere else.
+
+[[weaknesses]]
+tag = "undead"
+weakness = "holy"
+
+[[weaknesses]]
+tag = "ashborn"
+weakness = "frost"
+
+[[weaknesses]]
+tag = "aquatic"
+weakness = "fire"

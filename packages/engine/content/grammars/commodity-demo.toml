@@ -1,0 +1,11 @@
+# Commodities are the deliberate exception to "no concatenation
+# grammars" (D4) — real commodity names ARE formulaic (Virginia tobacco,
+# Sheffield steel). This demonstrates the mechanism Phase 6 will consume
+# ([region-adjective] [category-noun]); it generates no prices and is
+# wired to no economy — that's Phase 6's job.
+id = "grammar:commodity:demo"
+kernel_id = "kernel:fen"
+
+[rules]
+origin = ["#kernelRoot#cured #category#"]
+category = ["fish", "nets", "reeds", "salt"]

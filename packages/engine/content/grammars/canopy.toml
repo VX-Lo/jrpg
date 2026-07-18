@@ -1,0 +1,10 @@
+id = "grammar:canopy:flavor"
+kernel_id = "kernel:canopy"
+
+[rules]
+origin = ["The #kernelRoot#canopy sways with #mood#.", "A #kernelRoot#branch creaks overhead."]
+mood = [
+  { text = "quiet growth", weight = 2 },
+  { text = "old sap", weight = 1 },
+  { text = "watching stillness", weight = 1 },
+]

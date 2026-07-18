@@ -1,0 +1,32 @@
+# Weapon archetypes (D6) — reach and scaling stat live here, not on the
+# ability or the class. An ability's reach/effective scaling derive from
+# the equipped weapon at resolution time (Phase 5), never from the
+# ability's own data.
+
+[[weapons]]
+id = "weapon:sword"
+name = "Sword"
+reach = "melee"
+scaling_stat = "STR"
+slot_display = { striking = "edge", core = "tang" }
+
+[[weapons]]
+id = "weapon:mace"
+name = "Mace"
+reach = "melee"
+scaling_stat = "VIT"
+slot_display = { striking = "head", core = "haft" }
+
+[[weapons]]
+id = "weapon:staff"
+name = "Staff"
+reach = "melee"
+scaling_stat = "INT"
+slot_display = { striking = "head", core = "shaft" }
+
+[[weapons]]
+id = "weapon:bow"
+name = "Bow"
+reach = "ranged"
+scaling_stat = "AGI"
+slot_display = { striking = "limb", core = "grip" }

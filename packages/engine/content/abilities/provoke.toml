@@ -1,0 +1,14 @@
+# modify_threat primitive, defense. Sentinel signature ability. No
+# damage/heal power formula needed — modify_threat's magnitude is a flat
+# authored amount, not stat-scaled.
+id = "ability:provoke"
+name = "Provoke"
+tags = ["defense"]
+primary_domain_tag = "defense"
+target_shape = "one"
+tick_cost = 80
+resource_cost = 5
+
+[[effects]]
+primitive = "modify_threat"
+params = { amount = 25 }

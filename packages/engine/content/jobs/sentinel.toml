@@ -1,0 +1,18 @@
+# Tank fixture with a threat profile.
+id = "job:sentinel"
+name = "Sentinel"
+primary_tag = "defense"
+allowed_tags = ["defense", "martial", "holy"]
+signature_abilities = ["ability:provoke"]
+equip_proficiencies = ["weapon:mace", "weapon:sword"]
+default_row = "front"
+
+[stat_growth]
+STR = 2
+INT = 0
+VIT = 3
+AGI = 0
+PER = 1
+
+[threat_profile]
+base_threat_multiplier = 1.5

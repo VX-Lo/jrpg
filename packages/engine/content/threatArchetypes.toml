@@ -1,0 +1,55 @@
+# Threat archetypes (D5) — tagged, not counted. No hardcoded "four
+# fiends"; tier bosses (Phase 2) draw from the world-scope pool, regional
+# arcs (Phase 4) pull regional-scope from the same pool. Ids match
+# worldgen/config.ts's THREAT_ARCHETYPE_IDS fixture list so Phase 2's
+# boss placement references resolve to real content here.
+
+[[archetypes]]
+id = "archetype:bruiser"
+name = "Bruiser"
+tags = ["physical"]
+power_tier = 1
+scope = "world"
+row_line = "front"
+threat_behavior = "loyal"
+
+[[archetypes]]
+id = "archetype:swarm"
+name = "Swarm"
+tags = ["aquatic", "poison"]
+power_tier = 1
+scope = "world"
+row_line = "front"
+row_attack = true
+threat_behavior = "opportunist"
+
+[[archetypes]]
+id = "archetype:caster"
+name = "Caster"
+tags = ["shadow"]
+power_tier = 1
+scope = "world"
+row_line = "back"
+threat_behavior = "loyal"
+
+[[archetypes]]
+id = "archetype:ambusher"
+name = "Ambusher"
+# Obfuscation via unexpected tag composition, never a hidden field: this
+# is an undead THAT'S ALSO ashborn, so it draws two weaknesses (holy via
+# undead, frost via ashborn) from the one weakness table — see weaknesses.toml.
+tags = ["undead", "ashborn"]
+power_tier = 2
+scope = "regional"
+row_line = "back"
+threat_behavior = "assassin"
+counter_material = "silver"
+
+[[archetypes]]
+id = "archetype:sentinel"
+name = "Sentinel"
+tags = ["holy", "physical"]
+power_tier = 2
+scope = "world"
+row_line = "front"
+threat_behavior = "loyal"

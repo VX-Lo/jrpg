@@ -1,0 +1,14 @@
+# Kernel-aware flavor grammar for the Fen — the worked example.
+# #kernelRoot# pulls from kernel:fen's lexiconRoots (Phase 2 data), so
+# generated flavor text stays consistent with the region without a
+# separate authored root list.
+id = "grammar:fen:flavor"
+kernel_id = "kernel:fen"
+
+[rules]
+origin = ["The #kernelRoot#water stirs with #mood#.", "A #kernelRoot#wind rolls over the shallows."]
+mood = [
+  { text = "quiet dread", weight = 2 },
+  { text = "old memory", weight = 1 },
+  { text = "restless hunger", weight = 1 },
+]
