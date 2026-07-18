@@ -4,12 +4,12 @@
 
 ## Current state
 - **Phase:** 3 — content schema and grammar engine
-- **Status:** core schema, loader, and grammar engine built. All 6 gates passing (73/73 tests total, tsc/eslint clean). Not yet committed/pushed this session.
-- **Last action:** Wrote and passed all 6 Phase 3 gates (hot-load, new-ability composition, grammar determinism, formula safety, tag checks, validation-fails-loud). Fixed a real cross-test-file contamination bug: writing fixture files into the shared `content/` directory let concurrently-running test files see each other's temp files, since `loadContentFromDir` scans the whole directory — fixed with `test/content/tempContentDir.ts`, which copies content into an isolated OS temp dir per test.
-- **Next action:** Update CLAUDE.md's full architecture/decisions/stubs sections, commit, push, confirm CI green.
+- **Status:** COMPLETE. All 6 gates passing locally AND confirmed green in CI (GitHub Actions run 29641492283, conclusion: success, on push to main at commit 7d8f9f0).
+- **Last action:** Pushed the Phase 3 commit to `origin/main`. Confirmed the CI workflow run for that push completed with `conclusion: success` via the GitHub Actions API.
+- **Next action:** Awaiting user direction to begin Phase 4 (quest graphs/DAGs, hints, item placement, solvers) per the scope fence — nothing in Phase 4+ should start without explicit go-ahead.
 
 ## Phase 3 summary (complete, do not reopen without cause)
-Content schema and grammar engine: effect-primitive/Ability/Job/Tag/WeaponArchetype/ThreatArchetype schemas, a `ContentPort` TOML loader with loud validation, and a seeded Tracery-style grammar engine (weighted rules + kernel-aware `#kernelRoot#` expansion). Ability power is additive-then-bounded-multiply (rule 10), enforced at load. 4 fixture jobs, 8 fixture abilities (one per primitive, one composing two), 4 weapons, 5 threat archetypes (ids matching Phase 2's boss-placement fixture list), a 3-entry weakness table, 14 fixture tags, 5 fixture grammars (4 kernels + 1 commodity demo). All 6 gates green (23 content tests + 50 Phase 1/2 tests = 73 total). See `packages/engine/src/content/` and `packages/engine/content/`.
+Content schema and grammar engine: effect-primitive/Ability/Job/Tag/WeaponArchetype/ThreatArchetype schemas, a `ContentPort` TOML loader with loud validation, and a seeded Tracery-style grammar engine (weighted rules + kernel-aware `#kernelRoot#` expansion). Ability power is additive-then-bounded-multiply (rule 10), enforced at load. 4 fixture jobs, 8 fixture abilities (one per primitive, one composing two), 4 weapons, 5 threat archetypes (ids matching Phase 2's boss-placement fixture list), a 3-entry weakness table, 14 fixture tags, 5 fixture grammars (4 kernels + 1 commodity demo). All 6 gates green locally and in CI (GitHub Actions run 29641492283, commit 7d8f9f0). See `packages/engine/src/content/` and `packages/engine/content/`.
 
 ## Phase 2 summary (complete, do not reopen without cause)
 World generator: `worldgen(seed, tierIndex) → Tier`, fenced to exactly those 2 parameters. Config module, band curve (superlinear, Gate 3), 4 fixture region kernels, node-graph generation with guaranteed reachability, dungeon clusters, factions (bare reputation scalar), generated NPCs, boss placement with a ThreatArchetype reference. CLI pretty-printer for balance work at depth. All 6 gates green locally and in CI (GitHub Actions run 29630367237, commit afe4bb6). See `packages/engine/src/worldgen/` and git history for detail.
@@ -145,7 +145,7 @@ Net: kernels are not wrong, the pipeline produces coherent, readable output at e
 - [x] Gate 4: formula safety (rule 10) — `test/content/gate4.formula-safety.test.ts`, feeds the loader 3 unbounded-multiplier cases (job_level/primary_stat/weapon_scaling) + 1 positive control, all correct
 - [x] Gate 5: tag checks — `test/content/gate5.tag-checks.test.ts`, overlap access and primary-match mastery asserted separately (both the boolean and the numeric power delta), plus signature-bypass and real-fixture (Warrior/Mage vs. Cleave) cases
 - [x] Gate 6: validation fails loud — `test/content/gate6.validation.test.ts`, 5 cases: missing required field, unknown primitive, unknown tag, unknown weapon scaling stat, unknown ability reference in signature_abilities
-- Verified locally: 73 tests total (23 new + 50 from Phase 1/2), `tsc --noEmit` clean, `eslint .` clean. Not yet confirmed in CI this session.
+- Verified locally (73 tests total: 23 new + 50 from Phase 1/2, `tsc --noEmit` clean, `eslint .` clean) AND in CI: `.github/workflows/ci.yml` ran on push to main and completed with `conclusion: success` (run 29641492283).
 
 ## Decisions made
 - 2026-07-17 — Repo was essentially empty (only README + .gitignore). Starting Phase 1 from scratch per prompt.
