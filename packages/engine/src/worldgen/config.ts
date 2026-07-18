@@ -1,0 +1,132 @@
+/**
+ * Calibration config — every tunable number in the world generator lives
+ * here, named and documented. No magic numbers anywhere else in
+ * src/worldgen, ever.
+ *
+ * Several of these are genuinely undecided. The most consequential open
+ * question is intended run length: it determines band spacing, tier
+ * count to the death frontier, and the XP curve. Answering it later
+ * should cost an edit to this file, not a refactor of the generator.
+ */
+
+// ---------------------------------------------------------------------
+// Tier shape
+// ---------------------------------------------------------------------
+
+/** Total node budget for a tier, summed across all its regions. Constant regardless of shape. */
+export const NODES_PER_TIER = 24;
+
+/**
+ * [nodesPerRegion, nodesPerRegion, ...] — every shape sums to
+ * NODES_PER_TIER, so region *count* varies (2/3/4) while total tier size
+ * stays constant: 2 big regions, 3 medium, or 4 small carry equal weight
+ * with different texture. Rolled once per tier from
+ * `worldgen:tier:{n}:shape`.
+ */
+export const REGION_SHAPES: readonly (readonly number[])[] = [
+  [12, 12],
+  [8, 8, 8],
+  [6, 6, 6, 6],
+];
+
+/**
+ * The largest region count across all REGION_SHAPES. Kernel assignment
+ * per tier is drawn without replacement (see worldgen/kernel.ts) so that
+ * two regions in the same tier never share a kernel — with only a
+ * handful of fixture kernels this phase, two regions sharing a kernel
+ * would collide on curated name pools and produce duplicate proper
+ * nouns, which Gate 1 forbids. This means the kernel pool must have at
+ * least this many entries.
+ */
+export const MAX_REGIONS_PER_TIER = Math.max(...REGION_SHAPES.map((s) => s.length));
+
+// ---------------------------------------------------------------------
+// Difficulty band
+// ---------------------------------------------------------------------
+
+/** UNCALIBRATED: level band at tier 1. Depends on intended run length (open question — see file header). */
+export const BAND_BASE = 3;
+
+/**
+ * THE difficulty exponent. band(tierIndex) = round(BAND_BASE * tierIndex^BAND_GROWTH).
+ *
+ * MUST stay > 1 (superlinear). The meta system works because player
+ * power grows *linearly* across runs while difficulty grows
+ * *superlinearly* across tiers — death depth then falls out as roughly
+ * log(runs), and the curve self-limits without an explicit cap. If this
+ * is ever "simplified" to 1 (linear) or below, the game silently
+ * becomes an unwinnable treadmill at high run counts, and nothing else
+ * in the system would catch it. See Gate 3, which fits this curve and
+ * fails the build if the fitted exponent isn't > 1.
+ *
+ * UNCALIBRATED exact value — depends on intended run length — but the
+ * constraint BAND_GROWTH > 1 is not negotiable.
+ *
+ * Implementation note: band() uses Math.pow/Math.round (floating point).
+ * This is fine here — unlike the RNG/hash core, band() is never stored
+ * and never needs cross-platform-forever bit-stability for save
+ * compatibility (rule #2: derivable from the seed, recomputed every
+ * time). It only needs to be a pure function of tierIndex within one
+ * running process, which Math.pow trivially satisfies.
+ */
+export const BAND_GROWTH = 1.4;
+
+/** UNCALIBRATED: bands this far below the party's current band give ~0 meaningful XP. Depends on run length / XP curve (Phase 5/6 own the consumption side). */
+export const XP_CAP_DELTA = 5;
+
+// ---------------------------------------------------------------------
+// Region node composition
+// ---------------------------------------------------------------------
+
+export const MIN_SETTLEMENTS_PER_REGION = 1;
+export const MAX_DUNGEONS_PER_REGION = 3;
+
+/** UNCALIBRATED: fraction of a region's node budget that becomes settlements (rounded, floored at MIN_SETTLEMENTS_PER_REGION). */
+export const SETTLEMENT_NODE_FRACTION = 0.25;
+/** UNCALIBRATED: fraction of a region's node budget that becomes dungeon entrances (rounded, capped at MAX_DUNGEONS_PER_REGION). Remainder becomes landmarks. */
+export const DUNGEON_NODE_FRACTION = 0.15;
+
+export const MIN_FACTIONS_PER_REGION = 1;
+export const MAX_FACTIONS_PER_REGION = 3;
+
+export const MIN_NPCS_PER_REGION = 4;
+export const MAX_NPCS_PER_REGION = 8;
+
+export const DUNGEON_CLUSTER_MIN_NODES = 2;
+export const DUNGEON_CLUSTER_MAX_NODES = 5;
+
+// ---------------------------------------------------------------------
+// Node graph edges
+// ---------------------------------------------------------------------
+
+/** Normal edge weight (travel time, ticks) bounds. UNCALIBRATED — ties into the global tick economy later phases build on. */
+export const EDGE_WEIGHT_MIN_TICKS = 1;
+export const EDGE_WEIGHT_MAX_TICKS = 12;
+
+/**
+ * Wider weight bound applied when either endpoint of an edge is a
+ * landmark node — this is how remote/high-peak nodes get to be slow to
+ * reach without any special-casing: it's just a wider draw range keyed
+ * off node kind, same mechanism as every other edge.
+ */
+export const EDGE_WEIGHT_REMOTE_MAX_TICKS = 30;
+
+/** UNCALIBRATED: fraction of extra (non-spanning-tree) edges added for cycles/texture, relative to node count. */
+export const EXTRA_EDGE_FRACTION = 0.3;
+
+// ---------------------------------------------------------------------
+// Boss / threat archetype
+// ---------------------------------------------------------------------
+
+/**
+ * Fixture threat archetype IDs. Phase 2 only places a reference to one
+ * of these on the boss node — Phase 5 implements the mechanical guts
+ * behind each ID.
+ */
+export const THREAT_ARCHETYPE_IDS: readonly string[] = [
+  "archetype:bruiser",
+  "archetype:swarm",
+  "archetype:caster",
+  "archetype:ambusher",
+  "archetype:sentinel",
+];
