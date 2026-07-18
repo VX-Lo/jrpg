@@ -1,12 +1,10 @@
 import type { Rng } from "../rng/index.js";
 import type { EventLogWriter } from "../log/index.js";
+import type { Tier } from "../worldgen/types.js";
 
-/**
- * Near-empty stub — Phase 2 (worldgen) fills in what a "tier" actually
- * means (regions, settlements, etc). Only the shape matters right now.
- */
+/** Input spec: which tier to generate. `constructState` calls `worldgen(seed, tierIndex)` to build the real Tier. */
 export interface TierSpec {
-  readonly tier: number;
+  readonly tierIndex: number;
 }
 
 /**
@@ -22,6 +20,7 @@ export interface GameState {
   readonly rng: Rng;
   readonly log: EventLogWriter;
   tick: number;
-  readonly tier: TierSpec;
+  /** The real generated Tier (Phase 2's worldgen output) — not a stub anymore. */
+  readonly tier: Tier;
   readonly partySpec: PartySpec;
 }

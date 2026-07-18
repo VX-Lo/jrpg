@@ -35,12 +35,12 @@ Determinism substrate: SplitMix64 PRNG + FNV-1a key-hashed substreams, append-on
 - Event log shape: `{ seq: number, tick: number, type: string, payload: unknown }`. `seq` assigned monotonically at append time by `EventLogWriter`; `tick` is the universal game clock — drives all downstream time-based derivation (faction updates, market drift, event rolls) starting Phase 2+. Log is append-only; nothing is ever mutated or removed post-append.
 - Serializer tags BigInt values as `{ __bigint__: "123" }` via a JSON replacer/reviver, since payloads legitimately contain BigInts (seeds, 64-bit draws) and plain `JSON.stringify` throws on them.
 - Ports defined so far: `OraclePort<In, Out>` with `query(input): Out`. `LiveOracle` invokes the source and appends `{input, output}` under a caller-chosen event `type`; `ReplayOracle` reads events of that same type back in order and throws (does not silently fall back to live) if queried past what was logged.
-- `GameState` stub shape: `{ seed, rng, log, tick, tier, partySpec }`. `constructState(seed, tier, partySpec)` builds it fresh — no persisted world, only seed + empty log.
+- `GameState` shape: `{ seed, rng, log, tick, tier, partySpec }`. `tier` is now the REAL generated `Tier` (Phase 2's worldgen output), not a stub — `constructState(seed, tierSpec, partySpec)` calls `worldgen(seed, tierSpec.tierIndex)` internally. `TierSpec` is now just the input `{ tierIndex: number }`.
 - CLI (`packages/engine` → `npm run cli -- <command>` or `npx tsx src/harness/cli.ts <command>`):
-  - `generate <seed> [outFile]` — constructs state, runs the Phase-1 demo scenario, writes/prints the serialized log
+  - `generate <seed> [outFile]` — constructs state (tier 1), draws from a named substream, writes/prints the serialized log (Phase 1's demo scenario was deleted and replaced with an inline substream draw once real worldgen existed — see Decisions)
   - `replay <logFile>` — deserializes a log and folds it into a trivial `{eventCount, lastTick}` summary via `replay()`
   - `diff <fileA> <fileB>` — byte-compares two serialized logs, reports first differing offset, exit code 0/1
-  - `gen --seed X --tier N --print` — Phase 2, not yet built (next action)
+  - `gen --seed X --tier N [--print]` — Phase 2. Calls `worldgen(seed, tierIndex)` directly; `--print` renders `prettyPrintTier()` (human-readable), otherwise dumps `serializeTier()` JSON. This is how Gate 6 and all future balance work get done — runs are too long to play to deep tiers.
 
 ## Phase 2 architecture — world generator (`packages/engine/src/worldgen/`)
 - **THE FENCE:** `worldgen(seed: bigint|number|string, tierIndex: number): Tier` — exactly 2 parameters, enforced structurally (nothing downstream receives party/meta/run-state) and by an arity tripwire test (`worldgen.length === 2`) in `test/worldgen/gate2.colddepth.test.ts`.
@@ -78,7 +78,7 @@ Determinism substrate: SplitMix64 PRNG + FNV-1a key-hashed substreams, append-on
 - [x] Regions and kernels (4 fixtures incl. the Fen, boundary roots, economic axis assigned)
 - [x] Node graph (settlements/dungeon entrances/landmarks, weighted edges, reachability)
 - [x] Factions and NPCs (reputation scalar only; curated-pool names)
-- [ ] Dev harness extension: CLI pretty-printer (`gen --seed --tier --print`)
+- [x] Dev harness extension: `TierSpec`/`constructState` wired to real `worldgen()`, CLI pretty-printer (`gen --seed --tier --print`)
 
 ## Phase 2 gates (not done until all pass in CI)
 - [x] Gate 1: volume — `test/worldgen/gate1.volume.test.ts`, 1000 seeds × varied tier indices (1-80), `validateTier()` (src/worldgen/validate.ts) checks reachability, settlement/faction minimums, node-budget match, exactly-one-boss, dungeon-cluster-parent linkage, and tier-wide duplicate proper nouns
@@ -104,11 +104,11 @@ Determinism substrate: SplitMix64 PRNG + FNV-1a key-hashed substreams, append-on
 - 2026-07-17 — `band()` uses floating-point (`Math.pow`/`Math.round`) rather than integer-only arithmetic, unlike the RNG/hash core. Reasoning: band is derived data (rule #2: never stored, always recomputed from tierIndex), so it doesn't need the RNG/hash's cross-platform-forever bit-stability guarantee (that guarantee exists specifically because save files must replay identically on potentially different machines/engine versions years later) — it only needs to be a pure function of tierIndex within one running process, which floating-point trivially satisfies. Documented in `band.ts` and `config.ts` so this isn't mistaken for an oversight later.
 - 2026-07-17 — Dungeon cluster nodes are NOT counted toward a region's 24-node-tier budget. Reasoning: the design doc describes dungeon entrances as "hanging" a cluster off a local node — read as an appendage to the region graph, not part of it, so Gate 1's "node count matches budget exactly" check is about the top-level 24 only. Cluster nodes get their own internal reachability check instead (dungeon cluster connected to its parent).
 - 2026-07-17 — Node 0 in every region is deterministically forced to be a settlement (the region's entry point / main town), rather than letting node-kind shuffle place the entry point on a landmark or dungeon entrance. Not specified in the prompt; chosen because it reads more like a place (you always arrive in a town) and costs nothing (settlements are always ≥1 per region already).
+- 2026-07-17 — Deleted `harness/demoScenario.ts` (it was explicitly marked "delete or replace once Phase 2+ systems exist" in its own doc comment) now that real `worldgen()` exists. `TierSpec` changed from `{ tier: number }` to `{ tierIndex: number }`, and `GameState.tier` changed from that stub to the real `Tier` type — `constructState` now calls `worldgen(seed, tierSpec.tierIndex)` internally. Phase 1's `gate1.replay.test.ts` and the CLI's `generate` command, which both depended on the demo scenario purely to produce *some* deterministic log content to byte-diff, were updated to draw directly from a named substream inline instead — this keeps testing exactly what they always tested (EventLogWriter/serializeLog determinism), decoupled from any harness fixture module.
 
 ## Stubs / deferred
-- `tier: TierSpec` and `partySpec: PartySpec` (`src/harness/types.ts`) are near-empty stubs (Phase 2 fills world/tier meaning, Phase 5 fills party/stats). Phase 2's `Tier` type (worldgen/types.ts) is the real thing; `harness/types.ts`'s `TierSpec` still needs wiring to it (next action).
+- `partySpec: PartySpec` (`src/harness/types.ts`) is still a near-empty stub — Phase 5 fills in real party members. (`TierSpec`/`GameState.tier` are no longer stubs — wired to real `worldgen()` as of this session.)
 - No real Oracle implementation (e.g. chess engine) exists yet — only `createCountingOracleSource` used to prove the port in tests.
-- `demoScenario.ts` / CLI's `generate` command produce fixture data only (region/initiative-shaped rolls from named substreams) — not real worldgen or combat. Superseded by real `worldgen()` now that Phase 2 exists; CLI still needs a `gen` command wired to it.
 - Quest graphs/DAGs/hints/item placement (Phase 4) — boss node placed, no chain built to it.
 - Full kernel set of 15-25 (Phase 3) — only 4 fixture kernels exist.
 - Price math (Phase 6) — economic axis assigned per region, no formulas.

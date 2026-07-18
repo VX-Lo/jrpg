@@ -1,3 +1,3 @@
 export { constructState } from "./state.js";
-export { runDemoScenario } from "./demoScenario.js";
+export { prettyPrintTier } from "./prettyPrintTier.js";
 export type { GameState, TierSpec, PartySpec } from "./types.js";
