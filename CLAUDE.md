@@ -4,9 +4,9 @@
 
 ## Current state
 - **Phase:** 2 — world generator
-- **Status:** core generator built and passing its two signature gates (Gate 2 cold-depth, Gate 3 band growth). Gates 1/4/5 (volume, determinism, perturbation) and the CLI pretty-printer + Gate 6 spot-check still to do.
-- **Last action:** Built the full `worldgen(seed, tierIndex) → Tier` pipeline: config, types, band curve, 4 fixture kernels, region/node-graph generation (with reachability via spanning tree + extra edges), dungeon clusters, factions, NPCs, boss placement, and the top-level orchestrator. 39/39 tests passing (31 Phase 1 + 8 new), tsc/eslint clean.
-- **Next action:** Write Gate 1 (1000-seed volume/degenerate-output test), Gate 4 (determinism across many seeds/tiers), Gate 5 (perturbation — add a real new worldgen substream key, assert existing fields unchanged). Then extend the CLI with `gen --seed --tier --print` and run the Gate 6 human spot-check.
+- **Status:** generator complete, 5 of 6 gates passing (50/50 tests, tsc/eslint clean). Only Gate 6 (human spot-check) remains, which needs the CLI pretty-printer first.
+- **Last action:** Wrote and passed Gates 1, 4, 5. Gate 1 added `src/worldgen/validate.ts` (structural validity checker, reusable by the future CLI) and runs 1000 seeds × varied tier indices (1-80) in ~0.7s with zero violations. Gate 4 covers 9 seed/tier combos including tier 1000 and edge-case seeds. Gate 5 genuinely reimplements worldgen's call sequence with two new substream keys spliced in and diffs against real output.
+- **Next action:** Extend the CLI (`src/harness/cli.ts`) with `gen --seed X --tier N --print`, wire `TierSpec`/`constructState` to the real `Tier` type, then run Gate 6 (pretty-print 5 seeds, human read, record verdict here).
 
 ## Phase 1 summary (complete, do not reopen without cause)
 Determinism substrate: SplitMix64 PRNG + FNV-1a key-hashed substreams, append-only event log, OraclePort, dev harness/CLI. All 5 gates green locally and in CI (GitHub Actions run 29621644363, commit aa4ac84). See `packages/engine/src/{rng,log,oracle,harness}` and git history for detail — not re-documented here to keep this file current-focused.
@@ -81,11 +81,11 @@ Determinism substrate: SplitMix64 PRNG + FNV-1a key-hashed substreams, append-on
 - [ ] Dev harness extension: CLI pretty-printer (`gen --seed --tier --print`)
 
 ## Phase 2 gates (not done until all pass in CI)
-- [ ] Gate 1: volume — 1,000 seeds, no crash/degenerate output
+- [x] Gate 1: volume — `test/worldgen/gate1.volume.test.ts`, 1000 seeds × varied tier indices (1-80), `validateTier()` (src/worldgen/validate.ts) checks reachability, settlement/faction minimums, node-budget match, exactly-one-boss, dungeon-cluster-parent linkage, and tier-wide duplicate proper nouns
 - [x] Gate 2: COLD-DEPTH TEST — tier 40 generates directly, byte-identical regardless of other tiers generated in between (`test/worldgen/gate2.colddepth.test.ts`)
 - [x] Gate 3: band monotonicity + superlinear growth — fitted exponent via log-log regression across 50 tiers, asserted > 1 (`test/worldgen/gate3.band.test.ts`)
-- [ ] Gate 4: determinism — same tier twice, byte-diff, many seeds/tier indices
-- [ ] Gate 5: perturbation (real consumer) — add a genuinely new worldgen substream key, assert every pre-existing field unchanged
+- [x] Gate 4: determinism — `test/worldgen/gate4.determinism.test.ts`, 9 seed/tier combos incl. deep (tier 1000) and edge-case seeds (0, 2^64-1)
+- [x] Gate 5: perturbation (real consumer) — `test/worldgen/gate5.perturbation.test.ts`, reimplements worldgen's call sequence with two genuinely new substream keys spliced in (`region:{i}:weather`, `tier:{n}:omen`), asserts byte-identical output vs. real `worldgen()`
 - [ ] Gate 6: spot-check — pretty-print 5 seeds, human read, verdict recorded here (not automated)
 
 ## Decisions made
