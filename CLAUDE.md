@@ -4,9 +4,12 @@
 
 ## Current state
 - **Phase:** 2 — world generator
-- **Status:** COMPLETE. All 6 gates passing (50/50 automated tests green, tsc/eslint clean, plus the human Gate 6 spot-check recorded below). Not yet pushed to origin / confirmed in CI this session — that's the last step.
-- **Last action:** Ran Gate 6: pretty-printed and read 6 seed/tier combos via `gen --seed X --tier N --print`, verdict recorded below (yes, reads as a place, with expected fixture-scale caveats).
-- **Next action:** Commit this CLAUDE.md update, push to origin, confirm CI green (same pattern as Phase 1's close-out), then await user direction on Phase 3.
+- **Status:** COMPLETE. All 6 gates passing locally AND confirmed green in CI (GitHub Actions run 29630367237, conclusion: success, on push to main at commit afe4bb6).
+- **Last action:** Pushed the Phase 2 close-out commit to `origin/main`. Confirmed the CI workflow run for that push completed with `conclusion: success` via the GitHub Actions API.
+- **Next action:** Awaiting user direction to begin Phase 3 (content schemas, TOML loading, grammars, the full names tree, the full 15-25 kernel set) per the scope fence — nothing in Phase 3+ should start without explicit go-ahead.
+
+## Phase 2 summary (complete, do not reopen without cause)
+World generator: `worldgen(seed, tierIndex) → Tier`, fenced to exactly those 2 parameters. Config module, band curve (superlinear, Gate 3), 4 fixture region kernels, node-graph generation with guaranteed reachability, dungeon clusters, factions (bare reputation scalar), generated NPCs, boss placement with a ThreatArchetype reference. CLI pretty-printer for balance work at depth. All 6 gates green locally and in CI (GitHub Actions run 29630367237, commit afe4bb6). See `packages/engine/src/worldgen/` and git history for detail.
 
 ## Phase 1 summary (complete, do not reopen without cause)
 Determinism substrate: SplitMix64 PRNG + FNV-1a key-hashed substreams, append-only event log, OraclePort, dev harness/CLI. All 5 gates green locally and in CI (GitHub Actions run 29621644363, commit aa4ac84). See `packages/engine/src/{rng,log,oracle,harness}` and git history for detail — not re-documented here to keep this file current-focused.
