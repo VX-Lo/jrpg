@@ -217,3 +217,15 @@ export const ARC_MAX_BEATS = 8;
 
 /** World ticks a Beat can sit unresolved before the arc forces a transition on its own — the arc doesn't wait for the player (see CLAUDE.md Deliverable 7). UNCALIBRATED, ties into the same global tick economy as edge weights. */
 export const ARC_BEAT_TICK_THRESHOLD = 2000;
+
+/**
+ * No live play exists yet this phase, so arc simulation (questgraph/arcs/arcEngine.ts)
+ * stands in for it with one seeded roll per Beat: below this chance,
+ * the Beat's onQuestComplete transition fires; at or above, onTickTimeout
+ * fires instead. UNCALIBRATED — a future live-play phase replaces this
+ * roll with real quest-completion/tick-threshold events from the log.
+ * Chosen slightly above 0.5 so outcome distributions don't collapse
+ * toward the earliest timeout branch (see Gate 5 — no single outcome
+ * tag may exceed 85% of instances).
+ */
+export const ARC_BEAT_QUEST_COMPLETE_CHANCE = 0.55;
