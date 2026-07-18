@@ -4,12 +4,12 @@
 
 ## Current state
 - **Phase:** 4 — quest graph (forward DAG, hints, solvers, mercy, regional arcs, skill/elite placement)
-- **Status:** COMPLETE locally. All 8 gates green (106/106 tests total: 73 from Phases 1-3 + 33 new), `tsc --noEmit` clean, `eslint .` clean. Not yet pushed / CI not yet confirmed — see Next action.
-- **Last action:** Wired `quest` CLI command, ran the full local suite clean, wrote this update.
-- **Next action:** Commit-and-push closes this session per the session protocol. After push, confirm the CI workflow run for that push completes with `conclusion: success` and record the run id here (same pattern as Phases 1-3), then await user direction to begin Phase 5 (battle engine) — nothing in Phase 5+ should start without explicit go-ahead.
+- **Status:** COMPLETE. All 8 gates passing locally AND confirmed green in CI (GitHub Actions run 29647529211, conclusion: success, on push to main at commit dba1f53).
+- **Last action:** Pushed the Phase 4 commits to `origin/main`. Confirmed the CI workflow run for that push completed with `conclusion: success` via the GitHub Actions API.
+- **Next action:** Awaiting user direction to begin Phase 5 (battle engine, headless — CTB queue, effect-primitive execution, the three known tactics-project sequencing bugs as tests) — nothing in Phase 5+ should start without explicit go-ahead.
 
 ## Phase 4 summary (complete, do not reopen without cause)
-Quest graph: forward-generation DAG builder (deadlock-proof by construction — a gate's prerequisite is only ever drawn from nodes not reserved by that gate or a later one in the same region's chain), a small hint vocabulary (Location/Exclusion/Dependency/Proximity, vague→medium→precise), two solvers (B: brute-force fixpoint; A: evidence-constrained inference, the project's signature gate), mercy relocation with a hard pinning rule, 4 regional-arc fixture templates (Beat state machine, 4 outcome tags), and skill-trainer/elite-capture placement reusing the same reachable-pool mechanism as items. All 8 gates green locally (not yet confirmed in CI as of this writing — see Current state). Gate 2 (the two-solver gate) result: 1000/1000 seeds solved by inference alone, avg 1.096 guesses/seed, avg tedium index 0.319. See `packages/engine/src/questgraph/` and the Phase 4 architecture section below for the full design, including several judgment calls made without a prior design pass (documented in Decisions).
+Quest graph: forward-generation DAG builder (deadlock-proof by construction — a gate's prerequisite is only ever drawn from nodes not reserved by that gate or a later one in the same region's chain), a small hint vocabulary (Location/Exclusion/Dependency/Proximity, vague→medium→precise), two solvers (B: brute-force fixpoint; A: evidence-constrained inference, the project's signature gate), mercy relocation with a hard pinning rule, 4 regional-arc fixture templates (Beat state machine, 4 outcome tags), and skill-trainer/elite-capture placement reusing the same reachable-pool mechanism as items. All 8 gates green locally and in CI (GitHub Actions run 29647529211, commit dba1f53). Gate 2 (the two-solver gate) result: 1000/1000 seeds solved by inference alone, avg 1.096 guesses/seed, avg tedium index 0.319. See `packages/engine/src/questgraph/` and the Phase 4 architecture section below for the full design, including several judgment calls made without a prior design pass (documented in Decisions).
 
 ## Phase 3 summary (complete, do not reopen without cause)
 Content schema and grammar engine: effect-primitive/Ability/Job/Tag/WeaponArchetype/ThreatArchetype schemas, a `ContentPort` TOML loader with loud validation, and a seeded Tracery-style grammar engine (weighted rules + kernel-aware `#kernelRoot#` expansion). Ability power is additive-then-bounded-multiply (rule 10), enforced at load. 4 fixture jobs, 8 fixture abilities (one per primitive, one composing two), 4 weapons, 5 threat archetypes (ids matching Phase 2's boss-placement fixture list), a 3-entry weakness table, 14 fixture tags, 5 fixture grammars (4 kernels + 1 commodity demo). All 6 gates green locally and in CI (GitHub Actions run 29641492283, commit 7d8f9f0). See `packages/engine/src/content/` and `packages/engine/content/`.
@@ -203,7 +203,7 @@ Net: kernels are not wrong, the pipeline produces coherent, readable output at e
 - [x] Gate 6: skill/elite node reachability — `test/questgraph/gate6.skillEliteReachability.test.ts`, 1000 seeds, structural check (`questgraph/validate.ts`) via a full-tier reachability fixpoint (every lock resolves, not just the boss lock)
 - [x] Gate 7: determinism — `test/questgraph/gate7.determinism.test.ts`, quest graph + arc trajectories/events + mercy decisions all byte-identical across 2 independent builds, 7 seed/tier cases incl. edge cases
 - [x] Gate 8: perturbation — `test/questgraph/gate8.perturbation.test.ts`, real new substream-keyed consumers spliced into the actual questgraph/arcs call sequences, zero perturbation of pre-existing draws
-- Verified locally (106 tests total: 33 new + 73 from Phases 1-3, `tsc --noEmit` clean, `eslint .` clean). NOT YET confirmed in CI — commit-and-push for this phase happens at the end of this session; update this line with the run id once confirmed.
+- Verified locally (106 tests total: 33 new + 73 from Phases 1-3, `tsc --noEmit` clean, `eslint .` clean) AND in CI: `.github/workflows/ci.yml` ran on push to main and completed with `conclusion: success` (run 29647529211).
 
 ## Decisions made
 - 2026-07-17 — Repo was essentially empty (only README + .gitignore). Starting Phase 1 from scratch per prompt.
@@ -257,4 +257,4 @@ Net: kernels are not wrong, the pipeline produces coherent, readable output at e
 - Contracts, the board, NPC Echo hooks, quest-reward choice mechanics, and the full 15-20 arc roster (Phase 7) — this phase built 4 arc fixture templates proving the Beat-state-machine model, not the full roster or the lighter board-quest system; don't let either grow into the other later.
 
 ## Known issues
-- (none locally — full suite green, `tsc --noEmit` clean, `eslint .` clean. Phase 4's CI run has not yet been confirmed as of this writing; the prior phases' CI runs cited above remain green from their own pushes.)
+- (none — CI confirmed green on GitHub's hosted runners, run 29647529211)
