@@ -159,3 +159,61 @@ export const EQUIP_CAP = 6;
  * BAND_GROWTH/BAND_BASE above.
  */
 export const JOB_LEVEL_BONUS_PER_LEVEL = 1;
+
+// ---------------------------------------------------------------------
+// Phase 4 — quest graph calibration
+//
+// Same calibration home as everything else. Every number here is
+// UNCALIBRATED (depends on the same open run-length question as the
+// band constants above) except where a comment says otherwise — the
+// *mechanisms* these numbers drive (forward generation, multi-path
+// redundancy, specificity curve) are load-bearing; the exact magnitudes
+// are tuning knobs for later playtesting.
+// ---------------------------------------------------------------------
+
+/** Bounds on how many locked gates a region's local quest chain has. Small on purpose — see CLAUDE.md Phase 4 architecture for why regions stay independent, shallow puzzles rather than one tier-spanning chain. */
+export const QUESTGRAPH_MIN_GATES_PER_REGION = 2;
+export const QUESTGRAPH_MAX_GATES_PER_REGION = 4;
+
+/** Chance a gate's fact is placed at 2 already-reachable nodes instead of 1 — Deliverable 2's "multi-path, deliberately" bad-luck protection. Must fire often enough to matter, not as a rare edge case. */
+export const QUESTGRAPH_MULTI_PATH_CHANCE = 0.4;
+
+/** Chance a gate requires 2 facts (AND) instead of 1 — the "the Key needs the Rod and the Orb" compound-prerequisite case DependencyHint exists to narrate. */
+export const QUESTGRAPH_COMPOUND_LOCK_CHANCE = 0.3;
+
+/** Locked-node integrity, scaled by tier band. No `canPick` check exists anywhere — this is data for Phase 8's minigame to consume, not an enforced gate this phase. */
+export const LOCK_INTEGRITY_BASE = 10;
+export const LOCK_INTEGRITY_PER_BAND = 0.5;
+
+/** How many hints get emitted per prerequisite fact (Deliverable 3). */
+export const HINTS_PER_FACT = 3;
+
+/**
+ * Ordered vague → precise. Earlier hints on the path (nodes that
+ * unlocked further back in the region's gate sequence) get the vaguer
+ * end of this curve; hints from nodes closer to the point where the
+ * fact becomes necessary get the precise end. Length need not match
+ * HINTS_PER_FACT — hints are distributed across this curve by rank, see
+ * questgraph/hints.ts.
+ */
+export const HINT_SPECIFICITY_CURVE: readonly ("vague" | "medium" | "precise")[] = ["vague", "medium", "precise"];
+
+/** How many skill trainers / elite-capture markers each region places, via the same forward-generation reachable-pool mechanism as items (Deliverable 8 — not a parallel system). */
+export const SKILL_TRAINERS_PER_REGION_MIN = 0;
+export const SKILL_TRAINERS_PER_REGION_MAX = 2;
+export const ELITE_CAPTURES_PER_REGION_MIN = 0;
+export const ELITE_CAPTURES_PER_REGION_MAX = 2;
+
+/** Mercy relocation (Deliverable 4): seeded chance an eligible (zero-live-hint) fact relocates, given logged player state crosses the ticks threshold. */
+export const MERCY_ROLL_CHANCE = 0.5;
+export const MERCY_TICKS_SINCE_REACHABLE_THRESHOLD = 3000;
+
+// ---------------------------------------------------------------------
+// Phase 4 — regional arcs
+// ---------------------------------------------------------------------
+
+export const ARC_MIN_BEATS = 4;
+export const ARC_MAX_BEATS = 8;
+
+/** World ticks a Beat can sit unresolved before the arc forces a transition on its own — the arc doesn't wait for the player (see CLAUDE.md Deliverable 7). UNCALIBRATED, ties into the same global tick economy as edge weights. */
+export const ARC_BEAT_TICK_THRESHOLD = 2000;
