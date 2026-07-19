@@ -2,7 +2,7 @@
 
 *Working title. Cairn was the original placeholder but collides with a well-known OSR tabletop RPG. Hollowmark holds the slot for now — bottom-up naming is the plan: once the "hollow marks" mechanic the title should actually reference exists, the name gets built from it, not the other way around. Not there yet.*
 
-**Status:** Phases 0-3 complete — Phase 4 (quest graph) up next
+**Status:** Phases 0-4 complete — Phase 4.5 (spatial embedding) up next
 **Model allocation:** Opus for design + audit, Sonnet for all implementation
 **Reference lesson:** The tactics project shipped systems fast, accumulated combat sequencing bugs that surfaced late, and is currently learning that presentation can't rescue an illegible event log. This roadmap front-loads design and gates every phase on a test, not a review.
 
@@ -275,7 +275,8 @@ Every phase gated on an automated test or diffable artifact. No phase starts unt
 | 1 | **Determinism substrate** — splittable PRNG, substreams, event log, `OraclePort` — **PASSED, CI green** | Sonnet | Byte-diff two runs of one seed. **Then the perturbation test: a new substream consumer must not perturb existing output.** Most important gate in the project — get it wrong and determinism breaks silently, months before you notice |
 | 2 | World generator — tiers, regions, settlements, factions, NPCs, tier-indexed level bands — **PASSED, CI green** | Sonnet | 1,000 seeds generate without crash or degenerate output; spot-check 5 for "is this a place I want to be". **Cold-depth test: generate tier 40 directly from seed with no simulated play** — proves bands are `f(tier_index)` and the meta-fence holds |
 | 3 | Content schema + grammars — TOML classes/jobs, effect-primitive abilities, three-tier ability sourcing, equip cap, tag access + primary-tag mastery via job level, weapon-derived reach/scaling, seeded grammar engine — **PASSED, CI green (73/73)** | Opus design + Sonnet build | New class added by editing TOML only, zero code changes. **Plus: a new ability expressible as a composition of existing primitives, zero engine changes; and a grammar draws from a named substream (same seed → same output).** |
-| 4 | **Quest graph** — forward DAG, multi-path, item placement, **skill trainer + elite-capture node placement (same machinery, per §16)**, hint emission, mercy rules, regional arcs | Opus + Sonnet | **Two-solver gate (§4).** Solver A completes 1,000+ seeds by inference alone. Report tedium index + guess count. Companion: each regional arc reaches a terminal Beat within bound across 100+ seeds, outcome-tag distribution non-degenerate |
+| 4 | **Quest graph** — forward DAG, multi-path, item placement, **skill trainer + elite-capture node placement (same machinery, per §16)**, hint emission, mercy rules, regional arcs — **PASSED, CI green (8 gates, 1000/1000 solved by inference)** | Opus + Sonnet | **Two-solver gate (§4).** Solver A completes 1,000+ seeds by inference alone. Report tedium index + guess count. Companion: each regional arc reaches a terminal Beat within bound across 100+ seeds, outcome-tag distribution non-degenerate |
+| 4.5 | **Spatial embedding** — chunk-stitched tile terrain, Voronoi-blob region shapes, graph-driven passable/sealed borders, kernel-blended transitions, four zoom scales, tick-per-step-by-zoom, on-demand per-tier generation with boss-node-as-gateway | Opus design + Sonnet build | **Walkability contract, both directions, across 1,000+ seeds:** every logical DAG adjacency is physically walkable, AND no adjacency the graph didn't authorize exists physically (geometric neighbors without a graph edge are provably sealed). Flood-fill: every walkable tile reaches the backbone. Determinism + cold-depth still hold: tier N terrain is `f(seed, tierIndex)`, byte-identical regardless of prior tiers |
 | 5 | Battle engine, headless | Sonnet | Identical log twice. Variance audit. **Port the tactics project's three known sequencing bugs (counters, doubles, miss) as tests before writing the engine** |
 | 6 | Economy — categories, region profiles, stock, refresh | Sonnet | Market structure is learnable: a scripted "trader" using only category knowledge beats a random buyer over 100 seeds |
 | 7 | Simulation layer — faction rep, contracts, NPC memory, escalation, **Echo system (§12)** | Sonnet | **Read the raw event log of a 30-min playthrough with no UI.** If you can't reconstruct a story — including whether Echo chains actually fire, reference, and decay — the sim layer isn't done and no UI will save it |
@@ -315,7 +316,12 @@ Every phase gated on an automated test or diffable artifact. No phase starts unt
 | Meta stat becomes a dead purchase | 11 | Meta targets unbounded primaries only — STR/INT/VIT, never secondaries (§7) |
 | Trivial-encounter tedium at high meta | 5 | Auto-resolve above a power ratio; XP still lands, log still written |
 | Cannot playtest deep tiers by playing | 1 | Dev harness — `seed + tier + party → jump`. Free because the engine is headless |
-| Run length makes TPK punishing rather than climactic | 2 | **Open — needs a number.** See §16 |
+| Terrain generation breaks quest solvability | 4.5 | Graph is the skeleton; terrain embeds it. Walkability contract both directions, gated across 1,000+ seeds. Gate 2 stays green — Solver A still reasons over the logical graph |
+| Sealed pocket of walkable terrain forms accidentally | 4.5 | Honest connector specs → pockets only possible inside one chunk, validated once at authoring; flood-fill gate confirms empirically |
+| Unauthorized region adjacency creates a progression shortcut | 4.5 | Blobs touching without a graph edge are provably sealed — the easy-to-miss half of the walkability contract |
+| On-demand tier generation breaks determinism/cold-depth | 4.5 | Each tier a self-contained embedding, `f(seed, tierIndex)`; never reshaped by prior play; boss-node-as-gateway, not shared terrain |
+| Chunk terrain feels repetitive | 4.5 | 320-480 variants/biome vs ~64 slots; no-reuse-within-region + parametric fill; duplicate experience near-impossible |
+| Run length makes TPK punishing rather than climactic | 4.5 | Tier length ≈ 8-10h pinned by node budget (§16); frontier depth still open but composes as tier-length × tiers-reached |
 | Scope creep | all | §1 out-of-scope list; park, don't build |
 
 ---
@@ -414,16 +420,62 @@ All three tiers compete for a **hard equip cap (~6-8 slots)**. The cap, not acce
 
 ---
 
+## 16b. Spatial embedding — the world you walk
+
+The single biggest revision since Phase 0. Earlier passes treated traversal as abstract — "nodes" you'd effectively select between. That was wrong for this game: visible-enemy dodging, hidden discovery, and tick-as-distance all need physical space to exist in. **You walk around a large tile world.** Not real-time (standing still is paused; a step is a tick; the game increments then stops — the turn-based roguelike model, Brogue/DCSS), and not sprite-heavy (tiles can be glyphs or flat SVG; a tilemap is one viewport draw, not N sprites).
+
+**The abstract graph didn't die — it became the skeleton.** The Phase 4 quest DAG still reasons over *logical* nodes (this city, that dungeon) and their prerequisite ordering; Gate 2 stays green untouched. Phase 4.5 is a new layer that *embeds* those logical nodes into physical tile-space and guarantees the logical structure survives contact with terrain. Graph = invisible correctness-skeleton; grid = the flesh you actually move through.
+
+### Chunk-stitched terrain (not full noise-generation)
+
+Authored tile blocks (`CHUNK_SIZE × CHUNK_SIZE`, ~16), biome-tagged to kernels, each carrying a **connector spec** (what each edge is: open/wall/water/cliff, walkable or not). Chunks rotate/mirror (8 orientations) and carry seeded parametric fill, so no two instances look identical. ~40-60 authored chunks/biome × 8 orientations = 320-480 variants before fill — a real content pass, deferred to fixtures-first like every prior phase.
+
+**Assembly is backbone-first, the third time this project solved correctness by construction order** (after Phase 2 spanning-tree reachability and Phase 4 staged-reservation deadlock-proofing): build the walkable backbone connecting every logical node first, place anchor chunks (oriented to keep the through-path open) at backbone cells, then fill off-backbone cells freely — including deliberately-enclosed decorative terrain, since it carries no required connectivity.
+
+**No-repeat:** ~64 chunk-slots per region against 320-480 variants makes "never reuse a chunk+orientation within a region" trivially satisfiable with huge slack; soft without-replacement weighting across a tier makes even the authored skeleton rarely recur. Literal duplicate experience is near-impossible.
+
+**Enclosure guarantee, and the carve-out that dissolved:** if connector specs are honest (a wall edge never matches an open edge), any walkable tile at a chunk seam is provably connected to its neighbor by construction — the only place a sealed pocket can form is inside one chunk's interior, validated once at authoring time, not per seed. **"Enclosed unless meant to be" needs no graph exception** — a hidden vault is a normally-connected patch with a *lock on entry* (Phase 4's "locks gate usability, not traversal," reused exactly). Secrecy lives one layer up in what's visible/usable, so the graph stays unconditionally fully connected. Still gated empirically: flood-fill every walkable tile to the backbone across 1,000+ seeds.
+
+### Region shape and borders
+
+**Blobs, not squares.** One seed point per region on the coarse chunk-grid (min-distance constrained), nearest-seed assignment with noise-perturbed distance for wobbly borders, then 2-3 cellular-automata smoothing passes for organic shapes. Region size weights the Voronoi metric — Phase 2's existing big/medium/small designation reused as the weight, no new sizing logic.
+
+**Phase 2's region-adjacency graph becomes the literal passability rule** — a two-sided contract:
+- Blobs touch **and** the graph has an edge → a physical corridor (pass, trail, ford) cuts the border there.
+- Blobs touch but **no** graph edge → the border stays **sealed**, geometric adjacency notwithstanding. No accidental shortcut. *(This is the easy-to-miss direction, and it's half the walkability gate: no unauthorized adjacency may exist physically.)*
+- Tier outer boundary → impassable (void/ocean/mountains). A tier is a bounded canvas, not infinite terrain.
+
+**Blending by palette interpolation, never authored pairs** (the N² trap, already rejected once for combo techs). Each kernel declares a small blend descriptor; any two blend by linear interpolation over a 3-5 tile strip at their corridor. Kernels with a **declared boundary-root relationship** (Phase 2's existing name-blend data, reused) get wider/softer transitions; others get sharper ones — physical softness mirrors narrative closeness for free.
+
+**No temperature/moisture fields.** Minecraft needs continuous parameter fields to *derive discrete biome identity* across an unbounded world. That identity question is already answered upstream — Phase 2 assigns each region's kernel discretely, for a small fixed count. The remaining problem is only organic *shape* for already-named territories plus *local blending* at a few known seams, which is strictly smaller. (A future kernel-*placement* heuristic for the full 15-25 roster could use field-like reasoning, but that's a later content-pass concern, not Phase 4.5.)
+
+### Four zoom scales, one engine
+
+| Zoom | What | Movement |
+|---|---|---|
+| Closest | Inn rooms, dungeon rooms | On foot, room-scale chunks |
+| Medium | Towns, large dungeons | On foot, settlement-scale chunks |
+| Far | World map — find cities, dungeons, POIs | On foot, abstracted PC, wilderness-scale chunks |
+| Farthest | World map, way out — fast-travel targets, info | Pure abstraction, the logical region-graph |
+
+Same stitching engine at every scale except farthest (which is the abstract graph directly). **Ticks-per-step scales with zoom** — a far-zoom step covers ~a coarse cell, so its higher tick cost is justified by the ratio, not arbitrary. **"Movement gets cheaper as you explore"** generalizes Phase 2's hub-inn fast-travel discount one level down: first crossing of a cell costs full ticks, revisits a reduced flat rate. A found vehicle is the same discount as a flat modifier.
+
+### How tiers appear — on-demand, boss-node-as-gateway
+
+Not pre-generated-and-gated (violates rule 2 — "generator not database" — and a gated mega-map means either a hard wall, which the house style refuses everywhere else, or a walkable shortcut to tier 40). Not reshaped-on-boss-death (breaks Phase 2's cold-depth test — tier 40 must stay `f(seed, tierIndex)`, byte-identical regardless of prior play, or the dev harness can't jump to it).
+
+Instead: **each tier is a self-contained spatial embedding, generated on demand** the moment you step through the previous tier's boss fight (or the moment a balance harness requests it). Before that, a tier exists only as a pure function waiting to be called. **The boss node doubles as the exit** — "there is no last boss, just bosses forever" already makes the boss fight the hinge; defeat it and that node becomes the gateway to tier N+1's fresh canvas. No shared border between tiers; two independent embeddings joined by one doorway.
+
+**Continuity between tiers is memory, not geography** — the stronger, cheaper form, already built. Echo state, faction reputation, and bestiary knowledge are run-scoped (the whole playthrough, resetting only on TPK), so a faction angered in tier 2 still matters in tier 6. Small kernel pool means recognizable-but-unconnected tonal recurrence. **Optional cosmetic reshaping** (a defeated boss node showing rubble/a monument on backtrack) is log-driven, touches no generation, and gives the "world reacts to my victory" feeling without the technical violation.
+
+**Backtracking to prior tiers is allowed but never mandatory** — no DAG logic ever runs backward; a tier's golden path is entirely self-contained. Old tiers staying reachable is where the cosmetic touch lives; nothing forces it either way.
+
+---
+
 ## 16. Open — needs a number
 
-**How long is a run?**
+**How long is a run? — now partly answered.**
 
-Not a taste question, and not a fork — a calibration parameter that everything downstream depends on.
+Tier length falls out of the node budget once minutes-per-node is anchored: ~24 nodes at ~20-25 min each ≈ **8-10 hours per tier**, and the golden path spans all regions in a tier (~9-12 gates across 2-4 zones), not one region with the rest optional. Each region is a few hours of level-appropriate content — 1-2 cities, 1-2 dungeons, plus optional trainers/captures/trade — sized to its big/medium/small shape. Tonal variety (traveling between 2-4 distinct zones per tier) is why regions stay a few hours each rather than one 9-hour slog.
 
-Tiers are multi-region campaigns: ~24 nodes, multiple cities, deep dungeons, an 18-step quest chain to the boss. Call it 3–6 hours per tier. If the death frontier sits around tier 10–12, **runs are 40–60 hours, and a TPK at hour 50 restarts at tier 1.**
-
-That may be exactly right. Rimworld, Kenshi, and X4 are all built on 100-hour saves that die, and every seed regenerates tier 1 fresh — you're never *replaying* a tier, you're playing a new one. Procedural generation is the anti-tedium mechanism, and it may fully cover this.
-
-Or it may mean tiers want to be a third of that size.
-
-The number determines: the XP curve, band spacing, tier count to frontier, meta magnitude, and what Phase 2's generator is aiming at. **It blocks Phase 2's calibration, though not Phase 1.**
+**Still open: how many tiers deep does a typical run go before TPK?** That's the `log(runs)` frontier-depth question from the meta system (§5, §7). It now composes cleanly: **total run length ≈ tier length × tiers reached.** Tier length is roughly pinned; frontier depth is the remaining unknown, and it's a calibration number (XP curve, band spacing, meta magnitude), not a fork. Blocks final balance calibration, nothing structural.
