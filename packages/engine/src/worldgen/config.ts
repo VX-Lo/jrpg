@@ -252,3 +252,99 @@ export const ARC_BEAT_TICK_THRESHOLD = 2000;
  * tag may exceed 85% of instances).
  */
 export const ARC_BEAT_QUEST_COMPLETE_CHANCE = 0.55;
+
+// ---------------------------------------------------------------------
+// Phase 4.5 — spatial embedding
+// ---------------------------------------------------------------------
+// Terrain constants. Kept in this module rather than a spatial-local one
+// because this file is the project's single calibration home (same reason
+// Phase 3's EQUIP_CAP lives here rather than in content/).
+
+/** Tile edge length of one authored chunk at wilderness/settlement scale. */
+export const CHUNK_SIZE = 16;
+
+/** Tile edge length at the closest zoom (inn rooms, dungeon rooms) — deliberately smaller. */
+export const ROOM_CHUNK_SIZE = 8;
+
+/**
+ * Edge length of a tier's coarse chunk-grid. A tier is a bounded canvas
+ * (roadmap §16b) — COARSE_GRID_SIZE² cells, each holding one chunk.
+ *
+ * DELIBERATELY SMALLER THAN THE ROADMAP'S TARGET, and this is the honest
+ * fixture-stage tradeoff rather than a calibration guess. Roadmap §16b
+ * sizes regions at ~64 chunk-slots each, which is trivially satisfiable
+ * against the eventual 320-480 authored variants/biome — but this phase
+ * ships a FIXTURE chunk library (~2 dozen chunks), and the no-repeat rule
+ * (Gate 7: never reuse a chunk+orientation within one region) is a hard
+ * constraint, not a preference. At 8 a tier is 64 cells and a region is
+ * 16-32, which the fixture library satisfies with real slack.
+ *
+ * RAISE THIS TO 16 when the full 40-60-chunks/biome authoring pass lands.
+ * Nothing else needs to change — assembly reads this constant, and it
+ * fails loudly rather than silently degrading if the library is ever too
+ * thin for the grid (see assemble.ts).
+ */
+export const COARSE_GRID_SIZE = 8;
+
+/**
+ * Minimum Chebyshev distance between two regions' Voronoi seed points on
+ * the coarse grid. Prevents sliver regions. UNCALIBRATED — at
+ * COARSE_GRID_SIZE 16 with at most 4 regions, 4 is comfortably
+ * satisfiable while still allowing varied layouts.
+ */
+export const VORONOI_MIN_SEED_DISTANCE = 4;
+
+/**
+ * Magnitude of the seeded per-cell noise added to the Voronoi distance
+ * metric, in coarse-cell units. This is what makes borders wobble instead
+ * of forming straight bisectors. Too high and regions fragment into
+ * non-contiguous islands; the CA smoothing passes below exist to reabsorb
+ * the small fragmentation this does produce. UNCALIBRATED.
+ */
+export const VORONOI_NOISE_STRENGTH = 2.5;
+
+/** Cellular-automata majority-vote passes that round wobble into organic blobs. Roadmap §16b specifies 2-3. */
+export const VORONOI_SMOOTHING_PASSES = 3;
+
+/**
+ * Blend strip width in tiles at a region seam (roadmap §16b: 3-5).
+ * Kernels with a declared shared boundaryRoot get the WIDE value (softer,
+ * because narrative closeness earns physical closeness); kernels without
+ * get the NARROW one. No per-kernel-pair authoring — the N² trap.
+ */
+export const BLEND_STRIP_NARROW_TILES = 3;
+export const BLEND_STRIP_WIDE_TILES = 5;
+
+/**
+ * Ticks per step at each zoom. The closest zoom is the 1-tick baseline;
+ * coarser zooms cost more because one step covers proportionally more
+ * ground — the ratio is justified by the scale, not picked arbitrarily
+ * (roadmap §16b). UNCALIBRATED in absolute terms; the RATIOS are the
+ * meaningful part.
+ */
+export const ZOOM_TICKS_PER_STEP = {
+  closest: 1,
+  medium: 2,
+  far: 8,
+  /** Farthest zoom is pure abstraction over the logical graph — traversal there uses the region-adjacency edge's own weightTicks, not a per-step cost. */
+  farthest: 0,
+} as const;
+
+/**
+ * Movement-gets-cheaper-with-familiarity (roadmap §16b): the first crossing
+ * of a coarse cell costs full ticks; any later crossing costs this flat
+ * fraction of it. Generalizes Phase 2's hub-inn fast-travel discount one
+ * scale down. A found vehicle is the same mechanism with a different
+ * modifier — the mechanism is defined here, no vehicles are wired.
+ * UNCALIBRATED.
+ */
+export const REVISIT_TICK_MULTIPLIER = 0.25;
+
+/**
+ * Soft without-replacement weighting for chunk selection across a tier.
+ * A chunk+orientation already used elsewhere in the TIER has its selection
+ * weight multiplied by this each time it is reused, so repetition is
+ * discouraged tier-wide but never impossible. Reuse within a SINGLE region
+ * is forbidden outright, not weighted — see Gate 7. UNCALIBRATED.
+ */
+export const CHUNK_REUSE_WEIGHT_PENALTY = 0.15;

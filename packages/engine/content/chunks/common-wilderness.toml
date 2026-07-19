@@ -1,0 +1,359 @@
+# Fixture wilderness chunks — biome "common".
+#
+# The structural backbone of the fixture library: every open-edge pattern
+# (0/1/2-straight/2-bend/3/4 open edges) is represented, so the assembler
+# can satisfy any required through-path by rotating one of these. Regions
+# whose kernel has no dedicated biome pool fall back to this one.
+#
+# AUTHORING CONVENTION: every `open` edge is walkable at offsets 6-9 (the
+# middle four tiles). A single shared profile means any open edge matches
+# any other open edge, which is what keeps the fixture-stage constraint
+# solve satisfiable. The real library can vary profiles freely — nothing
+# in the assembler assumes this.
+#
+# Glyphs: "." walkable, "#" impassable, "P" walkable + can host a logical node.
+# `walkable_tiles` is omitted throughout and inferred from the grid; the
+# loader re-derives and compares either way, so an inferred spec is exactly
+# as validated as a declared one.
+
+# --- 4 open edges (crossroads) ---------------------------------------
+
+[[chunks]]
+id = "common:cross"
+biome_tag = "common"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "................",
+  "..#.............",
+  ".............#..",
+  "................",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "open" } }
+
+[[chunks]]
+id = "common:cross-plaza"
+biome_tag = "common"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "####........####",
+  "####........####",
+  "................",
+  "................",
+  "................",
+  "................",
+  "#####.......####",
+  "####........####",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "open" } }
+
+[[chunks]]
+id = "common:cross-poi"
+biome_tag = "common"
+scale = "wilderness"
+poi_slot = true
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "................",
+  ".......P........",
+  "..#.............",
+  "................",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "open" } }
+
+# --- 3 open edges (T junction: N, E, S open; W walled) ----------------
+
+[[chunks]]
+id = "common:tee"
+biome_tag = "common"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######..........",
+  "######..#.......",
+  "######..........",
+  "######..........",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "common:tee-poi"
+biome_tag = "common"
+scale = "wilderness"
+poi_slot = true
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######..........",
+  "######....P.....",
+  "######..........",
+  "######..........",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+# --- 2 open edges, bend (N, E open; S, W walled) ----------------------
+
+[[chunks]]
+id = "common:bend"
+biome_tag = "common"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######..........",
+  "######..........",
+  "######...#......",
+  "######..........",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "cliff" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "common:bend-poi"
+biome_tag = "common"
+scale = "wilderness"
+poi_slot = true
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######..........",
+  "######..P.......",
+  "######..........",
+  "######..........",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "cliff" }, west = { kind = "wall" } }
+
+# --- 2 open edges, straight (N, S open; E, W walled) ------------------
+
+[[chunks]]
+id = "common:straight"
+biome_tag = "common"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "#####.....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######.....#####",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "common:straight-poi"
+biome_tag = "common"
+scale = "wilderness"
+poi_slot = true
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "#####.....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######.P..######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+# --- 1 open edge (dead end, N open) -----------------------------------
+
+[[chunks]]
+id = "common:dead-end"
+biome_tag = "common"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "####......######",
+  "######....######",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "wall" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "common:dead-end-poi"
+biome_tag = "common"
+scale = "wilderness"
+poi_slot = true
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######.P..######",
+  "######....######",
+  "######....######",
+  "####......######",
+  "######....######",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "wall" }, west = { kind = "wall" } }
+
+# --- 0 open edges (solid fill, and the enclosed-decorative case) ------
+
+[[chunks]]
+id = "common:solid"
+biome_tag = "common"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+]
+connectors = { north = { kind = "wall" }, east = { kind = "wall" }, south = { kind = "wall" }, west = { kind = "wall" } }
+
+# The intentionally-enclosed decorative case: a walled garden you can see
+# but not enter from this chunk. Exercises Chunk.enclosedDecorative and is
+# the one exemption Gate 3's flood-fill honours. NOT how hidden content
+# works — a secret is a connected patch with a LOCK on it (roadmap §16b).
+[[chunks]]
+id = "common:walled-garden"
+biome_tag = "common"
+scale = "wilderness"
+poi_slot = false
+enclosed_decorative = true
+rows = [
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "######...#######",
+  "######...#######",
+  "######...#######",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+]
+connectors = { north = { kind = "wall" }, east = { kind = "wall" }, south = { kind = "wall" }, west = { kind = "wall" } }
