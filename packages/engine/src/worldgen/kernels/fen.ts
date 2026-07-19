@@ -9,6 +9,8 @@ export const fenKernel: RegionKernel = {
   economicAxis: "extractive",
   puzzleAffinity: "tide-lock",
   arcPool: ["fen:smuggler-network", "fen:drowned-shrine"],
+  biomeTag: "fen",
+  blend: { dominantTexture: "silt", accentTexture: "brackish-water", paletteAnchor: 0.35 },
   settlementNamePool: [
     "Saltmere",
     "Tideford",

@@ -8,6 +8,8 @@ export const cinderreachKernel: RegionKernel = {
   economicAxis: "refining",
   puzzleAffinity: "heat-lock",
   arcPool: ["cinder:guild-rivalry", "cinder:collapsed-forge"],
+  biomeTag: "cinderreach",
+  blend: { dominantTexture: "ash", accentTexture: "slag", paletteAnchor: 0.85 },
   settlementNamePool: [
     "Cinderfall",
     "Forgehold",

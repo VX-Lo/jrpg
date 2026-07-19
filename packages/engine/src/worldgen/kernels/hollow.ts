@@ -8,6 +8,8 @@ export const hollowKernel: RegionKernel = {
   economicAxis: "extractive",
   puzzleAffinity: "resonance-lock",
   arcPool: ["hollow:cave-in", "hollow:lightless-cult"],
+  biomeTag: "common",
+  blend: { dominantTexture: "bare-stone", accentTexture: "soot-drift", paletteAnchor: 0.45 },
   settlementNamePool: [
     "Deepwell",
     "Hollowreach",

@@ -19,10 +19,39 @@ export interface RegionKernel {
   readonly puzzleAffinity: string;
   /** Tags only — Phase 4 consumes these to pick eligible quest arcs. */
   readonly arcPool: readonly string[];
+  /** Which chunk library this kernel's terrain draws from (Phase 4.5). */
+  readonly biomeTag: string;
+  /** Terrain palette for seam blending (Phase 4.5, Deliverable 4). */
+  readonly blend: BlendDescriptor;
   readonly settlementNamePool: readonly string[];
   readonly npcNamePool: readonly string[];
   readonly factionNamePool: readonly string[];
   readonly landmarkNamePool: readonly string[];
+}
+
+/**
+ * A kernel's terrain palette, added in Phase 4.5 for Deliverable 4.
+ *
+ * Deliberately a SMALL, SELF-CONTAINED descriptor rather than a set of
+ * per-kernel-pair transition rules. Any two kernels blend by linear
+ * interpolation between their own descriptors over a strip at their shared
+ * corridor, so blending stays linear in kernel count. Authoring pairwise
+ * transitions would be the N² trap this project already rejected once for
+ * combo techs — with the eventual 15-25 kernels that would be 100-300
+ * authored transitions nobody will ever keep consistent.
+ */
+export interface BlendDescriptor {
+  /** Dominant ground texture id. Phase 10 maps these to actual visuals. */
+  readonly dominantTexture: string;
+  /** Secondary texture mixed in as the strip interpolates. */
+  readonly accentTexture: string;
+  /**
+   * Coarse palette anchor, 0-1 along a cold→hot axis. Interpolated across a
+   * blend strip. NOT a climate field — it is never used to DERIVE biome
+   * identity (Phase 2 already assigned that discretely); it only says how
+   * to shade the seam between two already-named territories.
+   */
+  readonly paletteAnchor: number;
 }
 
 export type NodeKind = "settlement" | "dungeonEntrance" | "landmark";

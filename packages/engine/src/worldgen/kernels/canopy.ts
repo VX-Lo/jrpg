@@ -8,6 +8,8 @@ export const canopyKernel: RegionKernel = {
   economicAxis: "mixed",
   puzzleAffinity: "growth-lock",
   arcPool: ["canopy:sap-plague", "canopy:sky-court"],
+  biomeTag: "common",
+  blend: { dominantTexture: "loam", accentTexture: "root-mat", paletteAnchor: 0.55 },
   settlementNamePool: [
     "Leafhome",
     "Boughwick",

@@ -388,3 +388,23 @@ export const REVISIT_TICK_MULTIPLIER = 0.25;
  * is forbidden outright, not weighted — see Gate 7. UNCALIBRATED.
  */
 export const CHUNK_REUSE_WEIGHT_PENALTY = 0.15;
+
+/**
+ * How many cosmetic decoration variants the parametric fill may scatter on
+ * a walkable tile. Purely visual — the decor layer is separate from the
+ * walkability mask and can never change it (see embed.ts). UNCALIBRATED;
+ * Phase 10 decides what these actually look like.
+ */
+export const DECOR_VARIANT_COUNT = 4;
+
+/**
+ * Chance an off-backbone coarse cell becomes an ENCLAVE — terrain sealed
+ * on all four sides, holding solid rock or an enclosed decorative pocket
+ * rather than walkable ground.
+ *
+ * Every non-enclave cell is linked back to the backbone instead, because a
+ * cell that is neither reachable nor sealed is a walkable island (Gate 3).
+ * Higher values give craggier, more closed-in regions; 0 gives terrain
+ * with no solid interior at all. UNCALIBRATED.
+ */
+export const ENCLAVE_CHANCE = 0.18;

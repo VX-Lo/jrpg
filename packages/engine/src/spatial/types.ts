@@ -319,6 +319,12 @@ export interface SpatialTier {
   readonly backbone: ReadonlySet<string>;
   readonly chunks: readonly PlacedChunk[];
   readonly mask: TileMask;
+  /**
+   * Cosmetic decoration variant per tile, parallel to `mask.tiles`. A
+   * SEPARATE layer on purpose: decoration must never be able to alter
+   * walkability after the backbone guarantees have been established.
+   */
+  readonly decor: Uint8Array;
   /** The logical node that is this tier's exit to tier N+1. */
   readonly exitNodeId: string;
 }
