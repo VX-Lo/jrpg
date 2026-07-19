@@ -325,6 +325,13 @@ export interface SpatialTier {
    * walkability after the backbone guarantees have been established.
    */
   readonly decor: Uint8Array;
+  /**
+   * Which region's PALETTE each tile is drawn with (Deliverable 4). Equals
+   * blob ownership everywhere except inside a corridor's blend strip,
+   * where the two regions' palettes interpolate. Data for Phase 10, not
+   * pixels.
+   */
+  readonly visualRegion: Uint8Array;
   /** The logical node that is this tier's exit to tier N+1. */
   readonly exitNodeId: string;
 }

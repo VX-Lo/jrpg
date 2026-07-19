@@ -5,6 +5,10 @@ import { join, dirname } from "node:path";
 import { constructState } from "./state.js";
 import { prettyPrintTier } from "./prettyPrintTier.js";
 import { prettyPrintQuestGraph, prettyPrintSolverResults, prettyPrintArcs } from "./prettyPrintQuestGraph.js";
+import { embedTier } from "../spatial/embed.js";
+import { farthestZoomView } from "../spatial/zoom.js";
+import type { ZoomScale } from "../spatial/types.js";
+import { prettyPrintCoarse, prettyPrintTiles } from "./prettyPrintSpatial.js";
 import { worldgen } from "../worldgen/worldgen.js";
 import { serializeTier } from "../worldgen/serialize.js";
 import { serializeLog, deserializeLog, replay, EventLogWriter, type Event } from "../log/index.js";
@@ -167,6 +171,49 @@ function cmdDiff(args: string[]): void {
   process.exit(1);
 }
 
+
+/**
+ * Deliverable 8 — `embed --seed X --tier N [--tiles] [--zoom far]`.
+ *
+ * The spatial equivalent of `gen --print`, and the tool all spatial
+ * balance work goes through: runs are far too long to walk to deep tiers
+ * by hand, so terrain at depth is only ever inspected this way. Also how
+ * Gate 8's human spot-check is performed.
+ */
+function cmdEmbed(args: string[]): void {
+  const flags = parseFlags(args);
+  const seedArg = flags.seed;
+  const tierArg = flags.tier;
+  if (typeof seedArg !== "string" || typeof tierArg !== "string") {
+    console.error("usage: embed --seed <seed> --tier <n> [--tiles] [--zoom farthest|far|medium|closest]");
+    process.exit(1);
+  }
+  const tierIndex = Number(tierArg);
+  if (!Number.isInteger(tierIndex) || tierIndex < 1) {
+    console.error(`--tier must be a positive integer, got "${tierArg}"`);
+    process.exit(1);
+  }
+
+  const embedded = embedTier(parseSeed(seedArg), tierIndex);
+  const zoom = (typeof flags.zoom === "string" ? flags.zoom : "far") as ZoomScale;
+
+  if (zoom === "farthest") {
+    // No terrain to dump — the farthest zoom IS the logical region graph.
+    console.log(`=== TIER ${tierIndex} — farthest zoom (abstract region graph, no terrain) ===`);
+    for (const target of farthestZoomView(embedded.tier)) {
+      const links = target.links.map((l) => `${l.regionId} (${l.weightTicks}t)`).join(", ") || "(none)";
+      console.log(`  ${target.regionId} [${target.kernelId}] entry=${target.entryNodeId} -> ${links}`);
+    }
+    return;
+  }
+
+  console.log(prettyPrintCoarse(embedded));
+  if (flags.tiles === true || typeof flags.tiles === "string") {
+    console.log("");
+    console.log(prettyPrintTiles(embedded, zoom));
+  }
+}
+
 function main(): void {
   const [command, ...rest] = process.argv.slice(2);
   switch (command) {
@@ -180,8 +227,10 @@ function main(): void {
       return cmdGen(rest);
     case "quest":
       return cmdQuest(rest);
+    case "embed":
+      return cmdEmbed(rest);
     default:
-      console.error("usage: hollowmark-engine <generate|replay|diff|gen|quest> ...");
+      console.error("usage: hollowmark-engine <generate|replay|diff|gen|quest|embed> ...");
       process.exit(1);
   }
 }

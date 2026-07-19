@@ -6,6 +6,7 @@ import { buildRegionBlobs } from "./voronoi.js";
 import { buildBorderPlan } from "./borders.js";
 import { buildBackbone, placeLogicalNodes } from "./backbone.js";
 import { assembleTier } from "./assemble.js";
+import { buildBlendLayer } from "./blend.js";
 import { defaultChunkLibrary } from "./chunks/defaultLibrary.js";
 import { CHUNK_SIZE, DECOR_VARIANT_COUNT } from "../worldgen/config.js";
 import type { Rng } from "../rng/index.js";
@@ -46,6 +47,7 @@ export function embedTier(
   const { chunks, mask } = assembleTier(root, tier, blobs, borders, backbone, placements, library);
 
   const decor = applyParametricFill(root, tier.tierIndex, chunks, mask);
+  const visualRegion = buildBlendLayer(root, tier, blobs, borders, mask);
 
   const exit = placements.find((p) => p.isExit);
 
@@ -59,6 +61,7 @@ export function embedTier(
     chunks,
     mask,
     decor,
+    visualRegion,
     exitNodeId: exit?.logicalNodeId ?? tier.bossNodeId,
   };
 
