@@ -1,0 +1,414 @@
+# Room-scale chunks — scale "room", biome "common".
+#
+# The CLOSEST zoom: inn rooms, dungeon rooms. Deliberately the second scale
+# proven rather than `medium`, because it is architecturally the furthest
+# from `far` — smallest tile size (ROOM_CHUNK_SIZE 8, not 16), different
+# POI density, different purpose. If one stitching engine serves both
+# extremes, `medium` sitting between them is materially lower-risk.
+#
+# AUTHORING CONVENTION AT THIS SCALE: open edges are walkable at offsets
+# 3-4 (the middle TWO tiles of 8), not 6-9. The convention is per-scale
+# because it is just "the middle of the edge" — nothing in the stitcher
+# assumes any particular profile, it only requires that two chunks meeting
+# at a seam declare the same offsets.
+#
+# Glyphs: "." walkable, "#" impassable, "P" walkable + hosts a logical node.
+
+# --- 4 open edges -----------------------------------------------------
+
+[[chunks]]
+id = "room:corridor-cross"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+rows = [
+  "###..###",
+  "###..###",
+  "###..###",
+  ".#......",
+  "........",
+  "###..###",
+  "###..###",
+  "###..###",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "open" } }
+
+[[chunks]]
+id = "room:chamber"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+rows = [
+  "###..###",
+  "###..###",
+  "#......#",
+  "........",
+  "........",
+  "#..#...#",
+  "###..###",
+  "###..###",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "open" } }
+
+[[chunks]]
+id = "room:chamber-poi"
+biome_tag = "common"
+scale = "room"
+poi_slot = true
+rows = [
+  "###..###",
+  "###..###",
+  "#......#",
+  "...P....",
+  "........",
+  "#......#",
+  "###..###",
+  "###..###",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "open" } }
+
+# --- 3 open edges (N, E, S; W walled) ---------------------------------
+
+[[chunks]]
+id = "room:hall-tee"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+rows = [
+  "###..###",
+  "###..###",
+  "###..###",
+  "###.....",
+  "###.....",
+  "###..###",
+  "###..###",
+  "###..###",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "room:hall-tee-2"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+rows = [
+  "###..###",
+  "###..###",
+  "###..###",
+  "###..#..",
+  "###.....",
+  "###..###",
+  "###..###",
+  "###..###",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "room:hall-tee-poi"
+biome_tag = "common"
+scale = "room"
+poi_slot = true
+rows = [
+  "###..###",
+  "###..###",
+  "###..###",
+  "###..P..",
+  "###.....",
+  "###..###",
+  "###..###",
+  "###..###",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+# --- 2 open edges, bend (N, E) ----------------------------------------
+
+[[chunks]]
+id = "room:corner-bend"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+rows = [
+  "###..###",
+  "###..###",
+  "###..###",
+  "###.....",
+  "###.....",
+  "########",
+  "########",
+  "########",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "wall" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "room:corner-bend-2"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+rows = [
+  "###..###",
+  "###..###",
+  "###...##",
+  "###.....",
+  "###..#..",
+  "########",
+  "########",
+  "########",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "wall" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "room:corner-bend-poi"
+biome_tag = "common"
+scale = "room"
+poi_slot = true
+rows = [
+  "###..###",
+  "###..###",
+  "###..###",
+  "###.P...",
+  "###.....",
+  "########",
+  "########",
+  "########",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "wall" }, west = { kind = "wall" } }
+
+# --- 2 open edges, straight (N, S) ------------------------------------
+
+[[chunks]]
+id = "room:passage-straight"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+rows = [
+  "###..###",
+  "###..###",
+  "##...###",
+  "###..###",
+  "###..###",
+  "###...##",
+  "###..###",
+  "###..###",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "room:passage-straight-poi"
+biome_tag = "common"
+scale = "room"
+poi_slot = true
+rows = [
+  "###..###",
+  "###..###",
+  "###..###",
+  "###..###",
+  "###..###",
+  "###P.###",
+  "###..###",
+  "###..###",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+# --- 1 open edge (N) --------------------------------------------------
+
+[[chunks]]
+id = "room:alcove-dead-end"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+rows = [
+  "###..###",
+  "###..###",
+  "###..###",
+  "###..###",
+  "##....##",
+  "########",
+  "########",
+  "########",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "wall" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "room:alcove-dead-end-2"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+rows = [
+  "###..###",
+  "###..###",
+  "##....##",
+  "##.#..##",
+  "###..###",
+  "########",
+  "########",
+  "########",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "wall" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "room:alcove-dead-end-poi"
+biome_tag = "common"
+scale = "room"
+poi_slot = true
+rows = [
+  "###..###",
+  "###..###",
+  "###..###",
+  "###..###",
+  "##P...##",
+  "########",
+  "########",
+  "########",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "wall" }, west = { kind = "wall" } }
+
+# --- 0 open edges -----------------------------------------------------
+
+[[chunks]]
+id = "room:wall"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+rows = [
+  "########",
+  "########",
+  "########",
+  "########",
+  "########",
+  "########",
+  "########",
+  "########",
+]
+connectors = { north = { kind = "wall" }, east = { kind = "wall" }, south = { kind = "wall" }, west = { kind = "wall" } }
+
+# A sealed vault you can see into but not enter from here — the room-scale
+# counterpart of the walled garden. Exercises the enclosed-decorative
+# carve-out at this scale too, so Gate 3's exemption is proven at both.
+[[chunks]]
+id = "room:vault"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+enclosed_decorative = true
+rows = [
+  "########",
+  "########",
+  "########",
+  "###..###",
+  "###..###",
+  "########",
+  "########",
+  "########",
+]
+connectors = { north = { kind = "wall" }, east = { kind = "wall" }, south = { kind = "wall" }, west = { kind = "wall" } }
+
+# --- additional non-POI variants ---------------------------------------
+#
+# SIZING: an interior is INTERIOR_GRID_SIZE^2 = 16 rooms, no-repeat is a
+# hard rule within one interior, and a fully-constrained room admits one
+# open-edge pattern. Straights are the pressure point (a spanning tree over
+# a small grid produces long runs of them), so they get the most bases.
+# Making the poi-slot match symmetric — a room with no node may not take a
+# poi chunk — halved the non-POI pool, which is what exposed this.
+
+[[chunks]]
+id = "room:passage-straight-2"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+rows = [
+  "###..###",
+  "##...###",
+  "###..###",
+  "###..###",
+  "###..###",
+  "###..###",
+  "###...##",
+  "###..###",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "room:passage-straight-3"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+rows = [
+  "###..###",
+  "###..###",
+  "###..###",
+  "##....##",
+  "##....##",
+  "###..###",
+  "###..###",
+  "###..###",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "room:hall-tee-3"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+rows = [
+  "###..###",
+  "###..###",
+  "###..###",
+  "###.....",
+  "###.#...",
+  "###..###",
+  "###..###",
+  "###..###",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "room:corner-bend-3"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+rows = [
+  "###..###",
+  "##...###",
+  "###..###",
+  "###..#..",
+  "###.....",
+  "########",
+  "########",
+  "########",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "wall" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "room:alcove-dead-end-3"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+rows = [
+  "###..###",
+  "###..###",
+  "###..###",
+  "###..###",
+  "#.....##",
+  "########",
+  "########",
+  "########",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "wall" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "room:corridor-cross-2"
+biome_tag = "common"
+scale = "room"
+poi_slot = false
+rows = [
+  "###..###",
+  "###..###",
+  "###..###",
+  "........",
+  "......#.",
+  "###..###",
+  "###..###",
+  "###..###",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "open" } }

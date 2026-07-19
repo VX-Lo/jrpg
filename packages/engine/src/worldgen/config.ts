@@ -422,3 +422,20 @@ export const ENCLAVE_CHANCE = 0.18;
  * UNCALIBRATED.
  */
 export const BIOME_MATCH_WEIGHT_BONUS = 12;
+
+/**
+ * Edge length of an interior's room grid at the closest zoom. 4 gives a
+ * 4x4 = 16-room inn or dungeon floor at ROOM_CHUNK_SIZE, i.e. 32x32 tiles.
+ * UNCALIBRATED — the right number depends on how long a dungeon floor
+ * should take to clear, which is Phase 5's question.
+ */
+export const INTERIOR_GRID_SIZE = 4;
+
+/**
+ * Chance a room inside an interior is sealed solid, giving the floor plan
+ * walls and irregularity rather than a full open lattice. Never applied to
+ * the entry or POI rooms, and any room the spanning tree cannot reach is
+ * sealed too — the same "linked or sealed, never an island" rule the far
+ * zoom uses. UNCALIBRATED.
+ */
+export const INTERIOR_SEALED_CELL_CHANCE = 0.22;

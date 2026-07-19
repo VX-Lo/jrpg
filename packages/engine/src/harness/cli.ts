@@ -8,7 +8,8 @@ import { prettyPrintQuestGraph, prettyPrintSolverResults, prettyPrintArcs } from
 import { embedTier } from "../spatial/embed.js";
 import { farthestZoomView } from "../spatial/zoom.js";
 import type { ZoomScale } from "../spatial/types.js";
-import { prettyPrintCoarse, prettyPrintTiles } from "./prettyPrintSpatial.js";
+import { prettyPrintCoarse, prettyPrintTiles, prettyPrintInterior } from "./prettyPrintSpatial.js";
+import { embedInterior } from "../spatial/interior.js";
 import { worldgen } from "../worldgen/worldgen.js";
 import { serializeTier } from "../worldgen/serialize.js";
 import { serializeLog, deserializeLog, replay, EventLogWriter, type Event } from "../log/index.js";
@@ -185,7 +186,7 @@ function cmdEmbed(args: string[]): void {
   const seedArg = flags.seed;
   const tierArg = flags.tier;
   if (typeof seedArg !== "string" || typeof tierArg !== "string") {
-    console.error("usage: embed --seed <seed> --tier <n> [--tiles] [--zoom farthest|far|medium|closest]");
+    console.error("usage: embed --seed <seed> --tier <n> [--tiles] [--zoom farthest|far|closest] [--node <id>]");
     process.exit(1);
   }
   const tierIndex = Number(tierArg);
@@ -207,10 +208,33 @@ function cmdEmbed(args: string[]): void {
     return;
   }
 
+  if (zoom === "closest") {
+    // The closest zoom is a genuinely different space, not a caption on the
+    // far-zoom map: pick the node (default: the tier's exit/boss) and build
+    // its interior with the room-scale library.
+    const nodeId = typeof flags.node === "string" ? flags.node : embedded.spatial.exitNodeId;
+    const node = embedded.tier.regions.flatMap((r) => r.nodes).find((n) => n.id === nodeId);
+    if (!node) {
+      console.error(`--node "${nodeId}" is not a logical node in tier ${tierIndex}`);
+      process.exit(1);
+    }
+    console.log(prettyPrintInterior(embedInterior(parseSeed(seedArg), tierIndex, node.id), node.name));
+    return;
+  }
+
+  if (zoom === "medium") {
+    // Stated plainly rather than silently falling back to far-zoom terrain.
+    console.error(
+      "medium zoom has no chunk library yet (documented deferral — see CLAUDE.md). " +
+        "Proven scales today: farthest, far, closest.",
+    );
+    process.exit(1);
+  }
+
   console.log(prettyPrintCoarse(embedded));
   if (flags.tiles === true || typeof flags.tiles === "string") {
     console.log("");
-    console.log(prettyPrintTiles(embedded, zoom));
+    console.log(prettyPrintTiles(embedded));
   }
 }
 

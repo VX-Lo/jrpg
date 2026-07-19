@@ -3,6 +3,8 @@ export * from "./voronoi.js";
 export * from "./borders.js";
 export * from "./backbone.js";
 export * from "./assemble.js";
+export * from "./stitch.js";
+export { embedInterior, type InteriorSpace } from "./interior.js";
 export * from "./blend.js";
 export * from "./zoom.js";
 export * from "./walkability.js";
