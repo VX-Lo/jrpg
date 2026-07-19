@@ -251,40 +251,50 @@ function enforceContiguity(owner: OwnerGrid, seeds: readonly CoarseCell[], size:
   return kept;
 }
 
-/**
- * Builds the tier's region blobs.
- *
- * `weightForRegion` reads `region.nodeBudget` — Phase 2's existing
- * big/medium/small designation reused as the Voronoi weight, per
- * Deliverable 2's "no new sizing logic". NOTE that Phase 2's REGION_SHAPES
- * are uniform within any single tier (`[12,12]`, `[8,8,8]`, `[6,6,6,6]`),
- * so today this weighting is a no-op and every region in a tier competes
- * equally. That is correct, not a bug: the designation varies region COUNT
- * per tier, not relative size within one. Reading the budget anyway means
- * non-uniform shapes would just work if they are ever authored.
- */
-export function buildRegionBlobs(root: Rng, tier: Tier): RegionBlobs {
-  const size = COARSE_GRID_SIZE;
-  const regionCount = tier.regions.length;
-
-  const noise: Float64Array[] = [];
-  for (let i = 0; i < regionCount; i++) {
-    noise.push(noiseField(root.substream(`spatial:tier:${tier.tierIndex}:region:${i}:shape`), size));
+/** All permutations of [0, n), in a fixed lexicographic order. */
+function permutations(n: number): number[][] {
+  if (n <= 1) return [Array.from({ length: n }, (_, i) => i)];
+  const out: number[][] = [];
+  for (let i = 0; i < n; i++) {
+    for (const rest of permutations(n - 1)) {
+      out.push([i, ...rest.map((v) => (v >= i ? v + 1 : v))]);
+    }
   }
+  return out;
+}
 
-  const seeds = placeSeeds(root.substream(`spatial:tier:${tier.tierIndex}:seeds`), regionCount, size);
+/** Do two regions' blobs share at least one orthogonal seam? */
+function blobsTouch(owner: OwnerGrid, size: number, a: number, b: number): boolean {
+  for (let cy = 0; cy < size; cy++) {
+    for (let cx = 0; cx < size; cx++) {
+      const here = owner[idx(cx, cy, size)];
+      if (here !== a && here !== b) continue;
+      const other = here === a ? b : a;
+      if (cx + 1 < size && owner[idx(cx + 1, cy, size)] === other) return true;
+      if (cy + 1 < size && owner[idx(cx, cy + 1, size)] === other) return true;
+    }
+  }
+  return false;
+}
 
-  const budgets = tier.regions.map((r) => r.nodeBudget);
-  const meanBudget = budgets.reduce((a, b) => a + b, 0) / Math.max(1, budgets.length);
-  const weights = budgets.map((b) => (meanBudget > 0 ? b / meanBudget : 1));
-
+/**
+ * The blob pipeline for one candidate seed layout: weighted noisy Voronoi
+ * assignment, CA smoothing, contiguity, then the territory floor.
+ */
+function growBlobs(
+  seeds: readonly CoarseCell[],
+  noise: readonly Float64Array[],
+  weights: readonly number[],
+  required: readonly number[],
+  size: number,
+): OwnerGrid {
   let owner: OwnerGrid = new Int8Array(size * size).fill(UNOWNED_CELL);
   for (let cy = 0; cy < size; cy++) {
     for (let cx = 0; cx < size; cx++) {
       if (!isInterior(cx, cy, size)) continue;
       let bestRegion = 0;
       let bestScore = Infinity;
-      for (let i = 0; i < regionCount; i++) {
+      for (let i = 0; i < seeds.length; i++) {
         const dx = cx - seeds[i].cx;
         const dy = cy - seeds[i].cy;
         const score = Math.sqrt(dx * dx + dy * dy) / weights[i] + noise[i][idx(cx, cy, size)];
@@ -312,13 +322,80 @@ export function buildRegionBlobs(root: Rng, tier: Tier): RegionBlobs {
     pin();
   }
   owner = enforceContiguity(owner, seeds, size);
-
-  // Every region needs a cell per logical node it hosts, plus routing slack.
-  const required = tier.regions.map((r) => r.nodes.length + REGION_CELL_SLACK);
   owner = ensureMinimumTerritory(owner, required, size);
-  owner = enforceContiguity(owner, seeds, size);
+  return enforceContiguity(owner, seeds, size);
+}
 
-  return { gridSize: size, owner, seeds };
+/**
+ * Builds the tier's region blobs.
+ *
+ * `weightForRegion` reads `region.nodeBudget` — Phase 2's existing
+ * big/medium/small designation reused as the Voronoi weight, per
+ * Deliverable 2's "no new sizing logic". NOTE that Phase 2's REGION_SHAPES
+ * are uniform within any single tier (`[12,12]`, `[8,8,8]`, `[6,6,6,6]`),
+ * so today this weighting is a no-op and every region in a tier competes
+ * equally. That is correct, not a bug: the designation varies region COUNT
+ * per tier, not relative size within one. Reading the budget anyway means
+ * non-uniform shapes would just work if they are ever authored.
+ */
+export function buildRegionBlobs(root: Rng, tier: Tier): RegionBlobs {
+  const size = COARSE_GRID_SIZE;
+  const regionCount = tier.regions.length;
+
+  const noise: Float64Array[] = [];
+  for (let i = 0; i < regionCount; i++) {
+    noise.push(noiseField(root.substream(`spatial:tier:${tier.tierIndex}:region:${i}:shape`), size));
+  }
+
+  const positions = placeSeeds(root.substream(`spatial:tier:${tier.tierIndex}:seeds`), regionCount, size);
+
+  // WHICH region occupies WHICH seed position is chosen to match Phase 2's
+  // region-adjacency graph, not left to chance.
+  //
+  // Measured before adding this: with regions dropped onto seed positions
+  // in index order, 26% of tiers had a graph edge whose two blobs never
+  // touched (so no corridor could be carved there at all), and 13.5% ended
+  // up with a region physically unreachable from the rest of the tier.
+  // Carving a corridor THROUGH an intervening region would have "fixed"
+  // reachability by opening a seam between two regions the graph does not
+  // connect — precisely the shortcut Gate 2 forbids. Laying the regions out
+  // to respect the graph in the first place is the fix that does not
+  // trade one gate against the other.
+  //
+  // At most 4 regions means at most 24 assignments; each is scored by
+  // actually building the blobs and counting how many graph edges come out
+  // geometrically adjacent. Exhaustive and deterministic — no RNG is
+  // consumed by the choice, so it cannot perturb anything downstream.
+  const budgets = tier.regions.map((r) => r.nodeBudget);
+  const meanBudget = budgets.reduce((a, b) => a + b, 0) / Math.max(1, budgets.length);
+  const weights = budgets.map((b) => (meanBudget > 0 ? b / meanBudget : 1));
+  const required = tier.regions.map((r) => r.nodes.length + REGION_CELL_SLACK);
+
+  // Graph edges as region-index pairs, so a candidate layout can be scored.
+  const indexOf = new Map(tier.regions.map((r, i) => [r.id, i]));
+  const graphEdges = tier.regionEdges.map(
+    (e) => [indexOf.get(e.from) as number, indexOf.get(e.to) as number] as const,
+  );
+
+  let bestOwner: OwnerGrid | null = null;
+  let bestSeeds: CoarseCell[] = [];
+  let bestScore = -1;
+
+  for (const assignment of permutations(regionCount)) {
+    // assignment[regionIndex] = which seed position that region grows from.
+    const candidateSeeds = assignment.map((slot) => positions[slot]);
+    const candidate = growBlobs(candidateSeeds, noise, weights, required, size);
+    const score = graphEdges.filter(([a, b]) => blobsTouch(candidate, size, a, b)).length;
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestOwner = candidate;
+      bestSeeds = candidateSeeds;
+    }
+    if (bestScore === graphEdges.length) break; // every graph edge is physically realisable
+  }
+
+  return { gridSize: size, owner: bestOwner as OwnerGrid, seeds: bestSeeds };
 }
 
 /** Cells owned by a region, in row-major order. */

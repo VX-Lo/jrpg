@@ -211,6 +211,41 @@ export interface BorderPlan {
   readonly sealedPairs: ReadonlySet<string>;
   /** Coarse cells carrying a carved corridor, keyed `cx,cy`. */
   readonly corridorCells: ReadonlySet<string>;
+  /**
+   * The specific coarse-grid seams a corridor cuts through, as canonical
+   * edge keys. THE ONLY inter-region seams permitted to be walkable —
+   * assembly forces every other cross-region seam closed, which is what
+   * makes the anti-shortcut gate hold by construction rather than by luck.
+   */
+  readonly corridorEdges: ReadonlySet<string>;
+}
+
+/** Direction indices used for coarse-grid edges. */
+export const DIR_N = 0;
+export const DIR_E = 1;
+export const DIR_S = 2;
+export const DIR_W = 3;
+export const DIR_DELTA: readonly (readonly [number, number])[] = [
+  [0, -1],
+  [1, 0],
+  [0, 1],
+  [-1, 0],
+];
+
+/** The EdgeName a direction index corresponds to, for connector lookup. */
+export const DIR_EDGE_NAME: readonly EdgeName[] = ["north", "east", "south", "west"];
+
+/**
+ * Canonical key for the seam between a cell and its neighbour in `dir`.
+ *
+ * Normalised so both sides of a seam produce the SAME key — a seam is one
+ * shared thing, and letting each side key it independently is how a border
+ * ends up open from one side and sealed from the other.
+ */
+export function seamKey(cx: number, cy: number, dir: number): string {
+  if (dir === DIR_N) return `${cx},${cy - 1}|S`;
+  if (dir === DIR_W) return `${cx - 1},${cy}|E`;
+  return `${cx},${cy}|${dir === DIR_E ? "E" : "S"}`;
 }
 
 export function regionPairKey(a: number, b: number): string {
