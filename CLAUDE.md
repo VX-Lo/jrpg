@@ -4,12 +4,12 @@
 
 ## Current state
 - **Phase:** 4.5 — spatial embedding (tile terrain; the Phase 4 quest graph embedded into walkable space)
-- **Status:** COMPLETE. All 8 deliverables built, all 8 gates green locally (136 tests, `eslint .` clean, `tsc --noEmit` clean). CI confirmation pending the push.
-- **Last action:** Gate 8 human spot-check performed and recorded below; blend/zoom tests added.
+- **Status:** COMPLETE. All 8 deliverables built, all 8 gates green locally AND confirmed green in CI (GitHub Actions run 29670936305, conclusion: success, on push to main at commit 5d67c19). 136 tests, `eslint .` clean, `tsc --noEmit` clean.
+- **Last action:** Pushed the Phase 4.5 commits to `origin/main` and confirmed the CI workflow run for that push completed with `conclusion: success` via the GitHub Actions API.
 - **Next action:** Awaiting user direction to begin Phase 5 (battle engine, headless — CTB queue, effect-primitive execution, the three known tactics-project sequencing bugs as tests). Nothing in Phase 5+ starts without explicit go-ahead.
 
 ## Phase 4.5 summary (complete, do not reopen without cause)
-Spatial embedding: the Phase 4 quest DAG stays authoritative and UNTOUCHED; a new `spatial/` layer embeds its logical nodes into walkable tile terrain and proves the logical structure survives. Chunk library with honest connector specs (validated both directions at load), 8 dihedral orientations derived programmatically, Voronoi region blobs with graph-aware seed layout, corridors-vs-sealed borders read off Phase 2's region-adjacency graph, backbone-first assembly (single row-major constraint pass, no backtracking), palette blending at corridors, four zoom scales, on-demand generation with the boss node as the gateway to tier N+1, and a CLI glyph dump. 41 fixture chunks across the `common` biome.
+All 8 gates green locally and in CI (run 29670936305, commit 5d67c19). Spatial embedding: the Phase 4 quest DAG stays authoritative and UNTOUCHED; a new `spatial/` layer embeds its logical nodes into walkable tile terrain and proves the logical structure survives. Chunk library with honest connector specs (validated both directions at load), 8 dihedral orientations derived programmatically, Voronoi region blobs with graph-aware seed layout, corridors-vs-sealed borders read off Phase 2's region-adjacency graph, backbone-first assembly (single row-major constraint pass, no backtracking), palette blending at corridors, four zoom scales, on-demand generation with the boss node as the gateway to tier N+1, and a CLI glyph dump. 41 fixture chunks across the `common` biome.
 
 **Gate 4 — the canary — held exactly: Phase 4's two-solver gate still reports 1000/1000 seeds, avg 1.096 guesses/seed, avg tedium 0.319, bit-identical to its Phase 4 baseline.** `questgraph/` was never modified; the central fence held.
 
@@ -349,4 +349,4 @@ Net: kernels are not wrong, the pipeline produces coherent, readable output at e
 - Contracts, the board, NPC Echo hooks, quest-reward choice mechanics, and the full 15-20 arc roster (Phase 7) — this phase built 4 arc fixture templates proving the Beat-state-machine model, not the full roster or the lighter board-quest system; don't let either grow into the other later.
 
 ## Known issues
-- (none — CI confirmed green on GitHub's hosted runners, run 29647529211)
+- (none — CI confirmed green on GitHub's hosted runners, run 29670936305)
