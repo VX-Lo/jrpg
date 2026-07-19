@@ -26,7 +26,7 @@ import { orientChunk } from "./chunks/orient.js";
 import { scaleBiomeKey } from "./chunks/loader.js";
 import { ownerAt } from "./voronoi.js";
 import type { Backbone } from "./backbone.js";
-import { CHUNK_SIZE, CHUNK_REUSE_WEIGHT_PENALTY } from "../worldgen/config.js";
+import { CHUNK_SIZE, CHUNK_REUSE_WEIGHT_PENALTY, BIOME_MATCH_WEIGHT_BONUS } from "../worldgen/config.js";
 
 /**
  * Deliverable 5, steps 3-5 — anchor chunks on the backbone, free fill off
@@ -128,11 +128,12 @@ export function assembleTier(
   // a region whose kernel biome has no chunks must still be buildable.
   const poolByRegion = tier.regions.map((region) => {
     const kernel = KERNELS.find((k) => k.id === region.kernelId);
-    const own = library.byScaleAndBiome.get(scaleBiomeKey("wilderness", kernel?.biomeTag ?? "common")) ?? [];
+    const biomeTag = kernel?.biomeTag ?? "common";
+    const own = library.byScaleAndBiome.get(scaleBiomeKey("wilderness", biomeTag)) ?? [];
     const common = library.byScaleAndBiome.get(scaleBiomeKey("wilderness", "common")) ?? [];
     const merged = [...own];
     for (const chunk of common) if (!merged.includes(chunk)) merged.push(chunk);
-    return buildVariantIndex(merged);
+    return { biomeTag, index: buildVariantIndex(merged) };
   });
 
   const chunks: PlacedChunk[] = [];
@@ -193,7 +194,7 @@ export function assembleTier(
       }
 
       const nodeHere = nodeCellByKey.get(cellKey);
-      const pool = poolByRegion[regionIndex];
+      const { biomeTag, index: pool } = poolByRegion[regionIndex];
 
       // ---- choose a variant ----
       let placed: { chunk: Chunk; orientation: Orientation } | null = null;
@@ -209,7 +210,11 @@ export function assembleTier(
           // Soft without-replacement across the tier: a variant already used
           // in another region is discouraged, never forbidden.
           const uses = usedInTier.get(orientationKey(v.chunk.id, v.orientation)) ?? 0;
-          return Math.pow(CHUNK_REUSE_WEIGHT_PENALTY, uses);
+          const reuse = Math.pow(CHUNK_REUSE_WEIGHT_PENALTY, uses);
+          // ...and strongly prefer the kernel's own biome over the common
+          // fallback, so a region looks like the place it is named after.
+          const biomeFit = v.chunk.biomeTag === biomeTag ? BIOME_MATCH_WEIGHT_BONUS : 1;
+          return reuse * biomeFit;
         });
         break;
       }

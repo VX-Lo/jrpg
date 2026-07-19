@@ -4,6 +4,7 @@ import { defaultChunkLibrary } from "../../src/spatial/chunks/defaultLibrary.js"
 import { blendStripWidth, kernelsShareBoundaryRoot } from "../../src/spatial/blend.js";
 import { chunkScaleFor, farthestZoomView, stepTickCost, tileSizeFor } from "../../src/spatial/zoom.js";
 import { ownerAt } from "../../src/spatial/voronoi.js";
+import { KERNELS } from "../../src/worldgen/kernels/index.js";
 import { CHUNK_SIZE, ROOM_CHUNK_SIZE, REVISIT_TICK_MULTIPLIER, ZOOM_TICKS_PER_STEP } from "../../src/worldgen/config.js";
 
 describe("Deliverable 4 — blending", () => {
@@ -46,6 +47,96 @@ describe("Deliverable 4 — blending", () => {
       expect(mixed / spatial.mask.tiles.length).toBeLessThan(0.05);
     }
   });
+
+  /**
+   * THE TEST THAT MAKES THE BLEND MEAN SOMETHING.
+   *
+   * The assertion above was originally written when `common` was the only
+   * authored biome, and it PASSED VACUOUSLY: `visualRegion` stores a region
+   * INDEX, and indices differ whether or not the terrain on either side of
+   * a seam differs at all. Every region drew from the same chunk pool, so
+   * "palettes mixed" meant nothing was actually being interpolated between.
+   *
+   * With the Fen and Cinderreach fixture sets authored — chosen because
+   * Phase 2's Gate 6 spot-check found them the most visually distinct pair
+   * (irregular wetland vs right-angled forge-town) — this searches for a
+   * tier where those two regions genuinely share a carved corridor, then
+   * asserts the blend strip sits between two DIFFERENT tilesets.
+   */
+  it("blends between two genuinely different tilesets, not one tileset against itself", () => {
+    let found = 0;
+
+    for (let s = 1; s <= 300 && found < 3; s++) {
+      const tierIndex = (s % 40) + 1;
+      const { tier, spatial } = embedTier(BigInt(s), tierIndex, library);
+
+      const indexOf = new Map(tier.regions.map((r, i) => [r.id, i]));
+      const kernelOf = (i: number): string => tier.regions[i].kernelId;
+
+      for (const pair of spatial.borders.connectedPairs) {
+        const [a, b] = pair.split("|").map(Number);
+        const kernels = [kernelOf(a), kernelOf(b)].sort();
+        if (kernels[0] !== "kernel:cinderreach" || kernels[1] !== "kernel:fen") continue;
+
+        // The two regions must actually be built from different chunk sets.
+        const biomesOf = (region: number): Set<string> =>
+          new Set(
+            spatial.chunks
+              .filter((c) => c.regionIndex === region)
+              .map((c) => library.byId.get(c.chunkId)?.biomeTag as string),
+          );
+        const biomesA = biomesOf(a);
+        const biomesB = biomesOf(b);
+
+        expect(biomesA.has("fen") || biomesA.has("cinderreach")).toBe(true);
+        expect(biomesB.has("fen") || biomesB.has("cinderreach")).toBe(true);
+        // Each side carries its own kernel's terrain, not just the shared fallback.
+        expect(
+          [...biomesA].some((t) => t !== "common"),
+          `region ${a} placed only common chunks — biome preference is not working`,
+        ).toBe(true);
+        expect([...biomesB].some((t) => t !== "common")).toBe(true);
+
+        // The two kernels' blend descriptors genuinely differ, so there is
+        // something to interpolate.
+        const kA = KERNELS.find((k) => k.id === kernelOf(a));
+        const kB = KERNELS.find((k) => k.id === kernelOf(b));
+        expect(kA?.blend.dominantTexture).not.toBe(kB?.blend.dominantTexture);
+        expect(kA?.blend.paletteAnchor).not.toBe(kB?.blend.paletteAnchor);
+
+        // And the strip really does attribute some tiles across the seam.
+        let crossAttributed = 0;
+        for (let y = 0; y < spatial.mask.height; y++) {
+          for (let x = 0; x < spatial.mask.width; x++) {
+            const at = y * spatial.mask.width + x;
+            const owner = ownerAt(spatial.blobs, Math.floor(x / CHUNK_SIZE), Math.floor(y / CHUNK_SIZE));
+            if (owner !== a && owner !== b) continue;
+            const other = owner === a ? b : a;
+            if (spatial.visualRegion[at] === other) crossAttributed++;
+          }
+        }
+        expect(
+          crossAttributed,
+          `seed ${s}: fen<->cinderreach corridor exists but no tile is drawn with the neighbour's palette`,
+        ).toBeGreaterThan(0);
+
+        found++;
+        // eslint-disable-next-line no-console
+        console.log(
+          `Deliverable 4 — seed ${s} tier ${tierIndex}: fen<->cinderreach corridor, ` +
+            `${crossAttributed} tiles cross-attributed; ` +
+            `strip width ${blendStripWidth(kernelOf(a), kernelOf(b))} ` +
+            `(shared boundary root: ${kernelsShareBoundaryRoot(kernelOf(a), kernelOf(b))})`,
+        );
+        break;
+      }
+      void indexOf;
+    }
+
+    // If this ever hits zero the test has gone vacuous again and must be fixed,
+    // not relaxed.
+    expect(found, "no fen<->cinderreach corridor found in 300 tiers — blend test is vacuous").toBeGreaterThan(0);
+  }, 300_000);
 });
 
 describe("Deliverable 6 — zoom scales", () => {

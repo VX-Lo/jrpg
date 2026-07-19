@@ -408,3 +408,17 @@ export const DECOR_VARIANT_COUNT = 4;
  * with no solid interior at all. UNCALIBRATED.
  */
 export const ENCLAVE_CHANCE = 0.18;
+
+/**
+ * Selection weight multiplier for a chunk whose biome matches the region's
+ * kernel, relative to a fallback `common` chunk.
+ *
+ * A kernel's own pool is UNIONED with common rather than replacing it, so
+ * that a biome with a thin fixture set is still buildable. Without a
+ * preference the union would drown the biome: `common` has far more chunks,
+ * so a Fen region would place mostly generic terrain and the Fen would not
+ * look like the Fen. This tilts selection strongly toward the kernel's own
+ * chunks while keeping common as a genuine fallback rather than a tie.
+ * UNCALIBRATED.
+ */
+export const BIOME_MATCH_WEIGHT_BONUS = 12;

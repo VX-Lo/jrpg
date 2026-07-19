@@ -1,0 +1,269 @@
+# Fen wilderness chunks — biome "fen".
+#
+# The Fen and Cinderreach were chosen as the second and third biomes on
+# purpose: Phase 2's Gate 6 spot-check found them the most distinct pair in
+# the kernel set (wetland vs forge-town), so a blend between them is the
+# strongest available test of whether the interpolation mechanism does
+# anything real.
+#
+# FEN CHARACTER: organic and wet. Passages widen and narrow irregularly,
+# scattered pools sit inside otherwise-open marsh, and nothing is square.
+# Read against cinder-wilderness.toml, which is deliberately all right
+# angles — that contrast is the point.
+#
+# These are ADDITIVE to the common pool, not a replacement, so they need
+# not cover all 16 open-edge patterns; assembly unions a kernel's own
+# biome with common and prefers the kernel's own (see assemble.ts).
+#
+# Same convention as every other file: open edges are walkable at 6-9.
+
+[[chunks]]
+id = "fen:marsh-cross"
+biome_tag = "fen"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "#####.....######",
+  "####......######",
+  "###.......######",
+  "..............#.",
+  "...##........#..",
+  "................",
+  ".....#..........",
+  "###.......######",
+  "####......######",
+  "#####.....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "open" } }
+
+[[chunks]]
+id = "fen:marsh-cross-poi"
+biome_tag = "fen"
+scale = "wilderness"
+poi_slot = true
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "#####.....######",
+  "####......######",
+  "###.......######",
+  "..............#.",
+  "...##...........",
+  "........P.......",
+  ".....#..........",
+  "###.......######",
+  "####......######",
+  "#####.....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "open" } }
+
+[[chunks]]
+id = "fen:reedbank-tee"
+biome_tag = "fen"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######..........",
+  "######..##......",
+  "######..........",
+  "######......#...",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "fen:reedbank-tee-poi"
+biome_tag = "fen"
+scale = "wilderness"
+poi_slot = true
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######..........",
+  "######..##......",
+  "######.....P....",
+  "######..........",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "fen:tidal-bend"
+biome_tag = "fen"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "######....######",
+  "######....######",
+  "#####.....######",
+  "####......######",
+  "#####.....######",
+  "######....######",
+  "######..........",
+  "######...##.....",
+  "######..........",
+  "######..........",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "water" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "fen:tidal-bend-poi"
+biome_tag = "fen"
+scale = "wilderness"
+poi_slot = true
+rows = [
+  "######....######",
+  "######....######",
+  "#####.....######",
+  "####......######",
+  "#####.....######",
+  "######....######",
+  "######..........",
+  "######...##.....",
+  "######.P........",
+  "######..........",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "water" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "fen:channel-straight"
+biome_tag = "fen"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "######....######",
+  "#####.....######",
+  "####......######",
+  "#####.....######",
+  "######....######",
+  "######...#######",
+  "######....######",
+  "#####.....######",
+  "####......######",
+  "#####.....######",
+  "######....######",
+  "######....######",
+  "#####.....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "fen:channel-straight-poi"
+biome_tag = "fen"
+scale = "wilderness"
+poi_slot = true
+rows = [
+  "######....######",
+  "#####.....######",
+  "####......######",
+  "#####.....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "#####.P...######",
+  "####......######",
+  "#####.....######",
+  "######....######",
+  "######....######",
+  "#####.....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "fen:silt-flat-dead-end"
+biome_tag = "fen"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "######....######",
+  "######....######",
+  "#####.....######",
+  "####......######",
+  "###.......######",
+  "###..##...######",
+  "####......######",
+  "#####.....######",
+  "######....######",
+  "######....######",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "wall" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "fen:drowned-hollow"
+biome_tag = "fen"
+scale = "wilderness"
+poi_slot = false
+enclosed_decorative = true
+rows = [
+  "################",
+  "################",
+  "################",
+  "################",
+  "#####....#######",
+  "####......######",
+  "####......######",
+  "#####....#######",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+]
+connectors = { north = { kind = "water" }, east = { kind = "water" }, south = { kind = "water" }, west = { kind = "water" } }

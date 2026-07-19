@@ -1,0 +1,262 @@
+# Cinderreach wilderness chunks — biome "cinderreach".
+#
+# CINDERREACH CHARACTER: built, not grown. Every impassable mass is a
+# rectangle — kilns, slag yards, flue walls — and passages run in straight
+# lines at right angles. Deliberately the visual opposite of
+# fen-wilderness.toml's irregular pools and widening channels, because the
+# blend strip between a Fen region and a Cinderreach region is what
+# Deliverable 4's test actually exercises. If these two read the same,
+# the blend proves nothing.
+#
+# Additive to the common pool. Open edges are walkable at 6-9.
+
+[[chunks]]
+id = "cinder:forge-cross"
+biome_tag = "cinderreach"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "####........####",
+  "................",
+  "....########....",
+  "....########....",
+  "................",
+  "####........####",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "open" } }
+
+[[chunks]]
+id = "cinder:forge-cross-poi"
+biome_tag = "cinderreach"
+scale = "wilderness"
+poi_slot = true
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "####........####",
+  "................",
+  "....########....",
+  "..P.########....",
+  "................",
+  "####........####",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "open" } }
+
+[[chunks]]
+id = "cinder:slagyard-tee"
+biome_tag = "cinderreach"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######..........",
+  "######.####.....",
+  "######.####.....",
+  "######..........",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "cinder:slagyard-tee-poi"
+biome_tag = "cinderreach"
+scale = "wilderness"
+poi_slot = true
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######..........",
+  "######.####..P..",
+  "######.####.....",
+  "######..........",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "cinder:kilnwall-bend"
+biome_tag = "cinderreach"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######..........",
+  "######....####..",
+  "######..........",
+  "######..........",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "cliff" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "cinder:kilnwall-bend-poi"
+biome_tag = "cinderreach"
+scale = "wilderness"
+poi_slot = true
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######..........",
+  "######....####..",
+  "######.P........",
+  "######..........",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+]
+connectors = { north = { kind = "open" }, east = { kind = "open" }, south = { kind = "cliff" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "cinder:flue-straight"
+biome_tag = "cinderreach"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "####......######",
+  "####.##...######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "cinder:flue-straight-poi"
+biome_tag = "cinderreach"
+scale = "wilderness"
+poi_slot = true
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "####......######",
+  "####.##.P.######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "######....######",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "open" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "cinder:ashfall-dead-end"
+biome_tag = "cinderreach"
+scale = "wilderness"
+poi_slot = false
+rows = [
+  "######....######",
+  "######....######",
+  "######....######",
+  "####......######",
+  "####.##...######",
+  "####.##...######",
+  "####......######",
+  "######....######",
+  "######....######",
+  "######....######",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+]
+connectors = { north = { kind = "open" }, east = { kind = "wall" }, south = { kind = "wall" }, west = { kind = "wall" } }
+
+[[chunks]]
+id = "cinder:sealed-kiln"
+biome_tag = "cinderreach"
+scale = "wilderness"
+poi_slot = false
+enclosed_decorative = true
+rows = [
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "#####......#####",
+  "#####......#####",
+  "#####......#####",
+  "#####......#####",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+  "################",
+]
+connectors = { north = { kind = "wall" }, east = { kind = "wall" }, south = { kind = "wall" }, west = { kind = "wall" } }
