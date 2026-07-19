@@ -179,11 +179,18 @@ export function coarseKey(cx: number, cy: number): string {
  */
 export const UNOWNED_CELL = -1;
 
+/**
+ * Coarse-cell ownership grid. The buffer type is pinned to `ArrayBuffer`
+ * (rather than the default `ArrayBufferLike`) so grids can be passed
+ * between the transform passes in voronoi.ts without variance errors.
+ */
+export type OwnerGrid = Int8Array<ArrayBuffer>;
+
 /** Deliverable 2's output: which region owns each coarse cell. */
 export interface RegionBlobs {
   readonly gridSize: number;
   /** Row-major `owner[cy * gridSize + cx]`, an index into Tier.regions or UNOWNED_CELL. */
-  readonly owner: Int8Array;
+  readonly owner: OwnerGrid;
   /** The Voronoi seed cell each region was grown from. Parallel to Tier.regions. */
   readonly seeds: readonly CoarseCell[];
 }

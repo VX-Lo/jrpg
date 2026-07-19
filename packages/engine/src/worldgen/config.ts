@@ -283,8 +283,12 @@ export const ROOM_CHUNK_SIZE = 8;
  * Nothing else needs to change — assembly reads this constant, and it
  * fails loudly rather than silently degrading if the library is ever too
  * thin for the grid (see assemble.ts).
+ *
+ * At 10 the outer ring is the impassable tier boundary (a tier is a
+ * bounded canvas), leaving an 8x8 = 64-cell interior — 16-32 cells per
+ * region depending on the tier's shape roll.
  */
-export const COARSE_GRID_SIZE = 8;
+export const COARSE_GRID_SIZE = 10;
 
 /**
  * Minimum Chebyshev distance between two regions' Voronoi seed points on
@@ -292,19 +296,55 @@ export const COARSE_GRID_SIZE = 8;
  * COARSE_GRID_SIZE 16 with at most 4 regions, 4 is comfortably
  * satisfiable while still allowing varied layouts.
  */
-export const VORONOI_MIN_SEED_DISTANCE = 4;
+export const VORONOI_MIN_SEED_DISTANCE = 3;
+
+/**
+ * Candidates drawn per region when placing Voronoi seeds (Mitchell's
+ * best-candidate). Plain rejection sampling reliably failed to place the
+ * 4th seed on an 8x8 interior and fell back to a colliding position, which
+ * produced regions with ZERO territory. Keeping the best of N candidates
+ * spreads seeds robustly at any region count.
+ */
+export const VORONOI_SEED_CANDIDATES = 16;
+
+/**
+ * Spare coarse cells a region needs beyond one per logical node, so the
+ * backbone has room to route between them. Territory is grown to meet this
+ * floor deterministically (see voronoi.ts) rather than hoped for.
+ */
+export const REGION_CELL_SLACK = 2;
 
 /**
  * Magnitude of the seeded per-cell noise added to the Voronoi distance
  * metric, in coarse-cell units. This is what makes borders wobble instead
  * of forming straight bisectors. Too high and regions fragment into
  * non-contiguous islands; the CA smoothing passes below exist to reabsorb
- * the small fragmentation this does produce. UNCALIBRATED.
+ * the small fragmentation this does produce.
+ *
+ * Tuned empirically against a border-straightness measure (fraction of
+ * border segments whose neighbouring row/column breaks at the same place)
+ * over 60 seeds: 2.0 → 0.536, 3.5 → 0.469, 5.0 → 0.454, 7.0 → 0.486.
+ * Chosen at the 5.0 minimum. Higher values keep nudging the measure down
+ * (10.0 → 0.445) but only by drowning the Voronoi structure in noise, so
+ * that the territory-floor repair does the shaping instead of the metric —
+ * lower score, worse generator.
+ *
+ * A LOW-FREQUENCY (box-blurred) noise field was tried here first, on the
+ * theory that CA smoothing would erase high-frequency wobble. It measured
+ * WORSE (0.531 vs 0.469 at equal strength) and the mechanism was removed
+ * rather than left in at zero passes: on an 8-cell interior a blurred
+ * field is effectively a global gradient, which translates a border rather
+ * than bending it. Recorded so the idea isn't re-tried blind.
  */
-export const VORONOI_NOISE_STRENGTH = 2.5;
+export const VORONOI_NOISE_STRENGTH = 5.0;
 
-/** Cellular-automata majority-vote passes that round wobble into organic blobs. Roadmap §16b specifies 2-3. */
-export const VORONOI_SMOOTHING_PASSES = 3;
+/**
+ * Cellular-automata majority-vote passes that round wobble into organic
+ * blobs. Roadmap §16b specifies 2-3; 2 is used because 3 passes of
+ * 8-neighbour majority visibly over-smoothed the borders back into
+ * straight lines.
+ */
+export const VORONOI_SMOOTHING_PASSES = 2;
 
 /**
  * Blend strip width in tiles at a region seam (roadmap §16b: 3-5).
