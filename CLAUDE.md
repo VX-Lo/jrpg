@@ -4,7 +4,7 @@
 
 ## Current state
 - **Phase:** 4.5 — spatial embedding (tile terrain; the Phase 4 quest graph embedded into walkable space)
-- **Status:** COMPLETE, gap-closing pass done. 9 gates green locally; CI confirmation recorded in the gate table below. 142 tests, `eslint .` clean, `tsc --noEmit` clean.
+- **Status:** COMPLETE. All 9 gates green locally AND confirmed green in CI (GitHub Actions run 29671790312, conclusion: success, commit fa1882a). 142 tests, `eslint .` clean, `tsc --noEmit` clean. See the gate-by-gate report below.
 - **Last action:** Closed the three reported gaps — Gate 1 strengthened to assert tier-wide reachability and graph-edge honouring, a second and third biome authored so blending is no longer vacuous, and the closest zoom built out so the stitching engine is proven at two scales.
 - **Next action:** Awaiting user direction to begin Phase 5 (battle engine, headless — CTB queue, effect-primitive execution, the three known tactics-project sequencing bugs as tests). Nothing in Phase 5+ starts without explicit go-ahead.
 
@@ -64,7 +64,7 @@ After the region-adjacency change: **107/107 green** (106 + 1 new Gate 5 sub-cas
 
 ## Phase 4.5 gate-by-gate report
 
-CI: GitHub Actions run **29671742358** — https://github.com/VX-Lo/jrpg/actions/runs/29671742358 (commit `PENDING`, conclusion: PENDING). All figures below are from that run's suite.
+CI: GitHub Actions run **29671790312** — https://github.com/VX-Lo/jrpg/actions/runs/29671790312 (commit `fa1882a`, conclusion: **success**). 142 tests, 34 files, `eslint .` and `tsc --noEmit` clean. All figures below are reproduced by that run's suite.
 
 | # | Gate | Result | Test file | Measured |
 |---|---|---|---|---|
@@ -378,4 +378,4 @@ Net: kernels are not wrong, the pipeline produces coherent, readable output at e
 - Contracts, the board, NPC Echo hooks, quest-reward choice mechanics, and the full 15-20 arc roster (Phase 7) — this phase built 4 arc fixture templates proving the Beat-state-machine model, not the full roster or the lighter board-quest system; don't let either grow into the other later.
 
 ## Known issues
-- (none — CI confirmed green on GitHub's hosted runners, run 29670936305)
+- (none — CI confirmed green on GitHub's hosted runners, run 29671790312)
