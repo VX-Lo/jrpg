@@ -51,6 +51,27 @@ export function validateTier(tier: Tier): string[] {
     }
   }
 
+  // Region-adjacency graph. Connectivity here is load-bearing for Phase 4.5:
+  // an unreachable region would embed as a physically walled-off blob with
+  // no corridor into it, i.e. a spatial softlock.
+  const regionIds = new Set(tier.regions.map((r) => r.id));
+  for (const edge of tier.regionEdges) {
+    if (!regionIds.has(edge.from) || !regionIds.has(edge.to)) {
+      violations.push(`tier ${tier.tierIndex}: region edge ${edge.from}->${edge.to} references an unknown region`);
+    }
+    if (edge.from === edge.to) {
+      violations.push(`tier ${tier.tierIndex}: region edge is a self-loop on ${edge.from}`);
+    }
+  }
+  if (tier.regions.length > 0) {
+    const reachedRegions = reachableFrom(tier.regions[0].id, tier.regions, tier.regionEdges);
+    for (const region of tier.regions) {
+      if (!reachedRegions.has(region.id)) {
+        violations.push(`tier ${tier.tierIndex}: region ${region.id} unreachable in the region-adjacency graph`);
+      }
+    }
+  }
+
   const bossNodes = tier.regions.flatMap((r) => r.nodes.filter((n) => n.isBoss));
   if (bossNodes.length !== 1) {
     violations.push(`tier ${tier.tierIndex}: expected exactly 1 boss node, found ${bossNodes.length}`);

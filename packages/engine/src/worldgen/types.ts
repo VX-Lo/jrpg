@@ -85,6 +85,24 @@ export interface Region {
   readonly npcs: readonly Npc[];
 }
 
+/**
+ * An edge in the tier's region-adjacency graph. Structurally identical to
+ * `WorldEdge` but deliberately a distinct type: `from`/`to` are REGION ids,
+ * not node ids, and confusing the two would silently produce a graph that
+ * validates but means nothing.
+ *
+ * This is the authoritative source of inter-region passability. Phase 4.5's
+ * spatial layer READS it (a region pair with an edge gets a physical
+ * corridor carved at their shared blob border; a pair without one stays
+ * sealed, geometric adjacency notwithstanding) and never writes it.
+ */
+export interface RegionEdge {
+  readonly from: string;
+  readonly to: string;
+  /** Travel time in ticks. Drawn from the wider inter-region range — see config. */
+  readonly weightTicks: number;
+}
+
 /** Reference only — Phase 5 implements the mechanical guts behind an archetype ID. */
 export interface ThreatArchetypeRef {
   readonly archetypeId: string;
@@ -96,6 +114,8 @@ export interface Tier {
   readonly shape: readonly number[];
   readonly band: number;
   readonly regions: readonly Region[];
+  /** Region-adjacency graph: connected by construction (spanning tree + extras). */
+  readonly regionEdges: readonly RegionEdge[];
   readonly bossNodeId: string;
   readonly bossRegionId: string;
   readonly bossThreatArchetype: ThreatArchetypeRef;

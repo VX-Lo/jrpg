@@ -5,6 +5,7 @@ import { assignKernels } from "./kernelAssignment.js";
 import { generateRegion } from "./region.js";
 import { band } from "./band.js";
 import { placeBoss, applyBoss } from "./boss.js";
+import { buildRegionAdjacency } from "./regionAdjacency.js";
 
 /**
  * `worldgen(seed, tierIndex) → Tier`. Pure, deterministic, cold-
@@ -31,6 +32,7 @@ export function worldgen(seed: bigint | number | string, tierIndex: number): Tie
 
   const placement = placeBoss(root, tierIndex, regions);
   const finalRegions = applyBoss(regions, placement);
+  const regionEdges = buildRegionAdjacency(root, tierIndex, finalRegions);
 
   return {
     tierIndex,
@@ -38,6 +40,7 @@ export function worldgen(seed: bigint | number | string, tierIndex: number): Tie
     shape,
     band: band(tierIndex),
     regions: finalRegions,
+    regionEdges,
     bossNodeId: placement.bossNodeId,
     bossRegionId: finalRegions[placement.bossRegionIndex].id,
     bossThreatArchetype: placement.bossThreatArchetype,

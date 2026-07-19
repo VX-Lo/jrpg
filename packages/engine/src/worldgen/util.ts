@@ -1,5 +1,4 @@
 import type { Rng } from "../rng/index.js";
-import type { WorldEdge, WorldNode } from "./types.js";
 
 /** Deterministic Fisher-Yates shuffle of [0, count). */
 export function shuffledIndices(rng: Rng, count: number): number[] {
@@ -19,11 +18,19 @@ export function pickWithoutReplacement(rng: Rng, poolSize: number, count: number
   return shuffledIndices(rng, poolSize).slice(0, count);
 }
 
-/** BFS reachable node ids from `entryId`, treating edges as undirected (travel is bidirectional). */
+/**
+ * BFS reachable ids from `entryId`, treating edges as undirected (travel is
+ * bidirectional).
+ *
+ * Structurally typed on `{id}` / `{from,to}` rather than on `WorldNode` /
+ * `WorldEdge` so the identical traversal serves both the node graph and the
+ * tier's region-adjacency graph. Behaviour is unchanged — this only widens
+ * what it will accept.
+ */
 export function reachableFrom(
   entryId: string,
-  nodes: readonly WorldNode[],
-  edges: readonly WorldEdge[],
+  nodes: readonly { readonly id: string }[],
+  edges: readonly { readonly from: string; readonly to: string }[],
 ): Set<string> {
   const adjacency = new Map<string, string[]>();
   for (const node of nodes) adjacency.set(node.id, []);

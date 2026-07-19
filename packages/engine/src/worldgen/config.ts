@@ -115,6 +115,29 @@ export const EDGE_WEIGHT_REMOTE_MAX_TICKS = 30;
 export const EXTRA_EDGE_FRACTION = 0.3;
 
 // ---------------------------------------------------------------------
+// Region adjacency graph
+// ---------------------------------------------------------------------
+
+/**
+ * Inter-region travel weight bounds. Deliberately wider and slower-
+ * floored than intra-region node edges: crossing between two regions is
+ * long-haul by nature, the same reasoning that gives landmark-endpoint
+ * edges `EDGE_WEIGHT_REMOTE_MAX_TICKS`. UNCALIBRATED.
+ */
+export const REGION_EDGE_WEIGHT_MIN_TICKS = 8;
+export const REGION_EDGE_WEIGHT_MAX_TICKS = 40;
+
+/**
+ * UNCALIBRATED: fraction of extra (non-spanning-tree) region edges, relative
+ * to region count. With 2-4 regions per tier this yields 0-1 extra edges —
+ * i.e. most tiers are a bare region *tree*, and some get one cycle. That is
+ * the intended shape: every unbuilt region pair is a SEALED border in
+ * Phase 4.5's spatial layer, so keeping the graph sparse is what gives the
+ * anti-shortcut gate (Phase 4.5 Gate 2) something real to assert.
+ */
+export const EXTRA_REGION_EDGE_FRACTION = 0.3;
+
+// ---------------------------------------------------------------------
 // Boss / threat archetype
 // ---------------------------------------------------------------------
 
