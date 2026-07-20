@@ -65,8 +65,17 @@ export type PrimitiveId = "damage" | "heal" | "apply_status" | "shift_queue" | "
 
 export type StatusId = "sleep" | "slow" | "poison" | "oiled";
 
+/** Separate axis from element tags: rows reduce `physical` specifically, some resists are channel-based. */
+export type DamageChannel = "physical" | "magical" | "true";
+
 export interface DamageParams {
   readonly powerFormula: PowerFormula;
+  /**
+   * Optional, defaulted (Phase 5, additive schema change — see CLAUDE.md
+   * Phase 5 fence): "physical" for weapon-scaled damage, "magical"
+   * otherwise. Untouched Phase 3 content omits this and still validates.
+   */
+  readonly channel?: DamageChannel;
 }
 
 export interface HealParams {

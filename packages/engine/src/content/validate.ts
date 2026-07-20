@@ -3,6 +3,7 @@ import {
   type Ability,
   type AbilityId,
   type BuffableStat,
+  type DamageChannel,
   type Effect,
   type EffectParams,
   type Job,
@@ -165,7 +166,17 @@ function validateEffect(raw: unknown, context: string, index: number): Effect {
   const pc = `${c} params`;
   let validatedParams: EffectParams;
   switch (primitive) {
-    case "damage":
+    case "damage": {
+      const powerFormula = validatePowerFormula(params.power_formula, pc);
+      let channel: DamageChannel | undefined;
+      if (params.channel !== undefined) {
+        channel = requireOneOf<DamageChannel>(params.channel, ["physical", "magical", "true"] as const, pc, "channel");
+      } else {
+        channel = powerFormula.base.kind === "weapon_scaling" ? "physical" : "magical";
+      }
+      validatedParams = { powerFormula, channel };
+      break;
+    }
     case "heal": {
       const powerFormula = validatePowerFormula(params.power_formula, pc);
       validatedParams = { powerFormula };

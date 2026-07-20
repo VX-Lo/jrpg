@@ -439,3 +439,75 @@ export const INTERIOR_GRID_SIZE = 4;
  * zoom uses. UNCALIBRATED.
  */
 export const INTERIOR_SEALED_CELL_CHANCE = 0.22;
+
+// ---------------------------------------------------------------------
+// Phase 5 — battle engine
+//
+// Same calibration home as everything else. Every number here is
+// UNCALIBRATED — this phase builds a correct engine, not a balanced one
+// (see CLAUDE.md Phase 5 spec). The mechanisms (one shared tick clock,
+// floored action cost, pressure-sensitive Boost) are load-bearing; the
+// magnitudes are placeholders for later harness-driven tuning.
+// ---------------------------------------------------------------------
+
+/** Baseline action cost in ticks before actionCostMult/actionWeight scale it. UNCALIBRATED. */
+export const BASE_ACTION_TICKS = 1000;
+
+/**
+ * Floor on resolvedActionCost so a large Haste (actionCostMult toward 0)
+ * can't drive an actor toward infinite actions per unit time (the AGI-floor
+ * concern, CLAUDE.md §3/§4). Non-negotiable mechanism; UNCALIBRATED exact
+ * value.
+ */
+export const MIN_ACTION_TICKS = 50;
+
+/**
+ * Ticks in one in-fiction day, for the overworld dawn/midday/dusk/night
+ * phase mapping (engine exposes absolute tick position only; the phase
+ * mapping is Design's — CLAUDE.md §4). DECISION (not an ASK-FIRST block):
+ * no market exists yet (Phase 6 is a stub with no price formulas) and the
+ * only other tick-consuming cadence today is ARC_BEAT_TICK_THRESHOLD =
+ * 2000 (arc Beats can force-transition unresolved) — that's a per-Beat
+ * threshold, not a day length, so there is no existing cadence this value
+ * could conflict with. Chosen as 24 * BASE_ACTION_TICKS (four phases of
+ * 6000 ticks each) so a day comfortably contains multiple arc Beats and
+ * several combat turns without being so long a single long fight can't
+ * plausibly burn a meaningful fraction of one. UNCALIBRATED.
+ */
+export const TICKS_PER_DAY = 24 * BASE_ACTION_TICKS;
+
+/**
+ * powerRatio(party, encounter) above this triggers auto-resolve instead of
+ * full CTB simulation (CLAUDE.md §11). UNCALIBRATED — exact powerRatio
+ * formula lives in battle/autoResolve.ts.
+ */
+export const AUTO_RESOLVE_THRESHOLD = 3.0;
+
+/** Boost (BP) accumulator gained per actor turn, absent any pressure modifier. UNCALIBRATED. */
+export const BOOST_PER_TURN = 1;
+
+/** Boost accumulator cap. UNCALIBRATED. */
+export const BOOST_CAP = 5;
+
+/** Max Boost that can be spent amplifying a single action. UNCALIBRATED. */
+export const BOOST_SPEND_MAX = 3;
+
+/**
+ * Multiplier applied to boostGenerationRate while a party member is
+ * wounded (has an unhealed Wound) or currently downed — the pressure-
+ * sensitive comeback lever that stands in for a separate limit-break
+ * system (CLAUDE.md §6). UNCALIBRATED.
+ */
+export const BOOST_PRESSURE_MULTIPLIER = 2.0;
+
+/** Level-difference damage scalar at attacker-3-below-defender, per CLAUDE.md §8 (~0.88 example). Smooth, monotonic, never zero — see battle/damage.ts. UNCALIBRATED. */
+export const LEVEL_DIFF_SCALAR_AT_MINUS3 = 0.88;
+
+/** Variance band half-width (±%) on damage rolls under normal (countered or unopposed) conditions. UNCALIBRATED. */
+export const DAMAGE_VARIANCE_NORMAL = 0.1;
+
+/** Variance band half-width (±%) when the soft-gate's "uncountered" widening applies (CLAUDE.md §8). UNCALIBRATED. */
+export const DAMAGE_VARIANCE_UNCOUNTERED = 0.35;
+
+/** Flat effective-stat edge granted to an uncountered threat's counter-material bonus (CLAUDE.md §8). UNCALIBRATED. */
+export const UNCOUNTERED_STAT_EDGE = 0.15;

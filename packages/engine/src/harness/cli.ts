@@ -19,6 +19,11 @@ import { serializeQuestGraph } from "../questgraph/serialize.js";
 import { solveA } from "../questgraph/solverA.js";
 import { solveB } from "../questgraph/solverB.js";
 import { buildTierArcs } from "../questgraph/arcs/tierArcs.js";
+import { createRng } from "../rng/index.js";
+import { runBattle } from "../battle/resolver.js";
+import { autoResolveBattle, computePowerRatio } from "../battle/autoResolve.js";
+import { buildLiveState } from "../battle/state.js";
+import type { BattleInput, BattleRequest } from "../battle/types.js";
 
 /**
  * Headless CLI for the engine — how every future gate gets exercised
@@ -238,6 +243,54 @@ function cmdEmbed(args: string[]): void {
   }
 }
 
+/**
+ * Phase 5 — `battle --seed X --fixture <path.json> [--content <dir>] [--auto] [--print]`.
+ *
+ * Runs a scripted fight from a seed + input script and dumps the
+ * resulting log — Gate 7's human spot-check tool and the way future
+ * balance work inspects battle behavior, mirroring `gen --print` and
+ * `embed` for their respective subsystems. The fixture file is
+ * `{ request: BattleRequest (counteredArchetypeIds as a string[]), inputs: BattleInput[] }`.
+ */
+function cmdBattle(args: string[]): void {
+  const flags = parseFlags(args);
+  const seedArg = flags.seed;
+  const fixtureArg = flags.fixture;
+  if (typeof seedArg !== "string" || typeof fixtureArg !== "string") {
+    console.error("usage: battle --seed <seed> --fixture <path.json> [--content <dir>] [--auto] [--print]");
+    process.exit(1);
+  }
+  const contentDir = typeof flags.content === "string" ? flags.content : DEFAULT_CONTENT_DIR;
+  const content = loadContentFromDir(contentDir);
+
+  const raw = JSON.parse(readFileSync(fixtureArg, "utf8")) as {
+    request: Omit<BattleRequest, "counteredArchetypeIds"> & { counteredArchetypeIds: readonly string[] };
+    inputs: BattleInput[];
+  };
+  const request: BattleRequest = { ...raw.request, counteredArchetypeIds: new Set(raw.request.counteredArchetypeIds) };
+
+  const rootRng = createRng(parseSeed(seedArg));
+  const rng = rootRng.substream(`battle:${request.encounterId}`);
+  const log = new EventLogWriter();
+  const ctx = { content, rng, log, startTick: 0 };
+
+  const useAuto = flags.auto === true;
+  const result = useAuto ? autoResolveBattle(request, ctx) : runBattle(request, raw.inputs, ctx);
+
+  if (flags.print) {
+    const { party, enemies } = buildLiveState(request, content, 0);
+    console.log(`=== battle ${request.encounterId} (${useAuto ? "auto-resolve" : "full"}) ===`);
+    console.log(`powerRatio: ${computePowerRatio(party, enemies).toFixed(2)}`);
+    console.log(`outcome: ${result.outcome}, tickCost: ${result.tickCost}`);
+    for (const event of result.log) {
+      console.log(JSON.stringify(event));
+    }
+    console.log(JSON.stringify({ partyDeltas: result.partyDeltas, rewards: result.rewards, bestiaryObservations: result.bestiaryObservations }));
+  } else {
+    console.log(JSON.stringify(result));
+  }
+}
+
 function main(): void {
   const [command, ...rest] = process.argv.slice(2);
   switch (command) {
@@ -253,8 +306,10 @@ function main(): void {
       return cmdQuest(rest);
     case "embed":
       return cmdEmbed(rest);
+    case "battle":
+      return cmdBattle(rest);
     default:
-      console.error("usage: hollowmark-engine <generate|replay|diff|gen|quest|embed> ...");
+      console.error("usage: hollowmark-engine <generate|replay|diff|gen|quest|embed|battle> ...");
       process.exit(1);
   }
 }
