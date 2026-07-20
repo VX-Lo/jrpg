@@ -3,10 +3,11 @@
 ## Read this first. Update it last.
 
 ## Current state
-- **Phase:** 5 (battle engine, headless) COMPLETE locally — 19 new tests (4 TDD checks + Gates 1-6 + supporting unit tests), 161 total, `eslint .` + `tsc --noEmit` clean. **Not yet pushed / CI-confirmed** — push and confirm before starting Phase 6.
+- **Phase:** 5 (battle engine, headless) COMPLETE and CI-CONFIRMED — commit `6a01755`, pushed to `main`, GitHub Actions green. 19 new tests (4 TDD checks + Gates 1-6 + supporting unit tests), 161 total, `eslint .` + `tsc --noEmit` clean. Phase 6 is next, gated on explicit go-ahead as usual.
 - **Note on the prior entry here:** this section previously claimed an uncommitted "territory-floor Voronoi fix" with a `test/spatial/regressions.test.ts` file. That file and fix do not exist anywhere in git history (checked `git log --all`, `git stash list`, all branches) — the note was stale/inaccurate by the time this session started. The 142-test baseline this session found on `main` (commit `d91369c`) matches the CI-confirmed count from run 29671790312, i.e. Phase 4.5 is exactly as CI last saw it, no extra local-only work. Recorded here rather than silently deleted, per this file's own "loud, not silent" convention.
-- **Gates:** All 9 Phase 4.5 gates remain green (re-run as the canary discipline requires — see Phase 5 fence below). All 7 Phase 5 gates green locally; Gate 7 (human spot-check) verdict recorded below.
-- **Last substantive action:** implemented `src/battle/`, wrote and ran gates, ran a scripted spot-check fight through the new `battle` CLI subcommand.
+- **Gates:** All 9 Phase 4.5 gates remain green (re-run as the canary discipline requires — see Phase 5 fence below). All 7 Phase 5 gates green in CI; Gate 7 (human spot-check) verdict recorded below.
+- **CI note:** the `gates` job logs one informational annotation, not a failure — `actions/checkout@v4`/`actions/setup-node@v4` are being forced onto Node 24 runners even though the workflow targets Node 20 (GitHub deprecated Node 20 runners). Nothing to fix for Phase 5; worth a deliberate Node-version bump in `.github/workflows/ci.yml` next time CI config is touched, rather than leaving it silently forced.
+- **Last substantive action:** implemented `src/battle/`, wrote and ran gates, ran a scripted spot-check fight through the new `battle` CLI subcommand, pushed and confirmed CI green.
 
 ## Project rules (never violate)
 1. **Determinism** — same seed + inputs = bit-identical log. Tested, not assumed.
@@ -117,4 +118,4 @@ Gates 1-6 (`test/battle/gates.test.ts`): determinism (full + auto, byte-identica
 
 ## Known issues
 - None outstanding for Phase 5 (see Gate 7 gap above, tracked as a content-authoring stub, not an engine defect).
-- Phase 5 work is committed but **not yet pushed / CI-confirmed** — see Current state.
+- CI's `gates` job runs on Node 24 despite the workflow targeting Node 20 (GitHub-side forced deprecation, informational annotation only, not a failure) — see Current state.
