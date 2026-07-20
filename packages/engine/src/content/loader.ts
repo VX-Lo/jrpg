@@ -4,8 +4,12 @@ import { parse as parseToml } from "smol-toml";
 import type {
   Ability,
   AbilityId,
+  ArmorArchetype,
+  ArmorArchetypeId,
   Job,
   JobId,
+  Module,
+  ModuleId,
   TagDef,
   TagId,
   ThreatArchetype,
@@ -15,7 +19,16 @@ import type {
   WeaponArchetypeId,
 } from "./types.js";
 import type { Grammar } from "./grammar/types.js";
-import { validateAbility, validateJob, validateTags, validateThreatArchetype, validateWeaknesses, validateWeapons } from "./validate.js";
+import {
+  validateAbility,
+  validateArmor,
+  validateJob,
+  validateModule,
+  validateTags,
+  validateThreatArchetype,
+  validateWeaknesses,
+  validateWeapons,
+} from "./validate.js";
 import { validateGrammar } from "./grammar/validate.js";
 
 /**
@@ -38,6 +51,12 @@ export interface ContentPort {
 
   getThreatArchetype(id: ThreatArchetypeId): ThreatArchetype;
   listThreatArchetypes(): readonly ThreatArchetype[];
+
+  getArmorArchetype(id: ArmorArchetypeId): ArmorArchetype;
+  listArmorArchetypes(): readonly ArmorArchetype[];
+
+  getModule(id: ModuleId): Module;
+  listModules(): readonly Module[];
 
   /** Looks up the ONE authored weakness table for a set of tags (e.g. a threat archetype's tags). Composition of tags composes weaknesses. */
   getWeaknessesFor(tags: readonly TagId[]): readonly TagId[];
@@ -77,6 +96,12 @@ export function loadContentFromDir(dir: string): ContentPort {
   const weapons = validateWeapons(readTomlFile(join(dir, "weapons.toml")));
   const weaponsById = new Map(weapons.map((w) => [w.id, w]));
   const knownWeaponIds = new Set(weapons.map((w) => w.id));
+
+  const armor = validateArmor(readTomlFile(join(dir, "armor.toml")));
+  const armorById = new Map(armor.map((a) => [a.id, a]));
+
+  const modules = listTomlFiles(join(dir, "modules")).map((path) => validateModule(readTomlFile(path), path));
+  const modulesById = new Map(modules.map((m) => [m.id, m]));
 
   const abilities = listTomlFiles(join(dir, "abilities")).map((path) =>
     validateAbility(readTomlFile(path), knownTags, path),
@@ -127,6 +152,12 @@ export function loadContentFromDir(dir: string): ContentPort {
 
     getThreatArchetype: (id) => mustGet(threatArchetypesById, id, "threat archetype"),
     listThreatArchetypes: () => threatArchetypes,
+
+    getArmorArchetype: (id) => mustGet(armorById, id, "armor archetype"),
+    listArmorArchetypes: () => armor,
+
+    getModule: (id) => mustGet(modulesById, id, "module"),
+    listModules: () => modules,
 
     getWeaknessesFor: (tags) => {
       const result = new Set<TagId>();

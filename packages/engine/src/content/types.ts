@@ -205,6 +205,72 @@ export interface WeaponArchetype {
 }
 
 // ---------------------------------------------------------------------
+// Armor archetype (Phase 6.5) — the SAME slot-composition shape as
+// WeaponArchetype, pointed at a second content pool (CLAUDE.md §6.5.1).
+// `slotDisplay` is pure display labels, no runtime logic — same as
+// WeaponArchetype's striking/core (mitigation math is deliberately out
+// of scope this pass; see CLAUDE.md Decisions log).
+// ---------------------------------------------------------------------
+
+export type ArmorArchetypeId = string;
+export type ArmorSlot = "head" | "body";
+
+export interface ArmorSlotDisplay {
+  readonly plating: string;
+  readonly lining: string;
+}
+
+export interface ArmorArchetype {
+  readonly id: ArmorArchetypeId;
+  readonly name: string;
+  readonly slot: ArmorSlot;
+  readonly slotDisplay: ArmorSlotDisplay;
+}
+
+// ---------------------------------------------------------------------
+// Module (Phase 6.5) — grants while-equipped modifier entries in the
+// Phase 5 registry. `targetVariable`/`operation` are kept as plain
+// strings here (not `battle`'s `ModifierVariable`/`ModifierOperation`
+// types) because content/ must never import battle/ (the fence holds in
+// the other direction) — the strict rule-10-aware check happens in
+// `equipment/`, which is allowed to depend on both.
+// ---------------------------------------------------------------------
+
+export type ModuleId = string;
+
+export interface ModuleModifierGrant {
+  readonly targetVariable: string;
+  readonly operation: "add" | "multiply";
+  readonly magnitude: number;
+}
+
+export interface Module {
+  readonly id: ModuleId;
+  readonly name: string;
+  readonly grants: readonly ModuleModifierGrant[];
+}
+
+// ---------------------------------------------------------------------
+// GearInstance (Phase 6.5) — a concrete, composed piece of gear: an
+// archetype + grade, resolved via the one slot-composition resolver
+// (content/gearInstance.ts) that both crafting and looting call, so
+// there is exactly one place gear identity is assembled.
+// ---------------------------------------------------------------------
+
+export type GearSlot = "weapon" | "head" | "body";
+
+/** Fixed per spec: common / fine / masterwork (economy/types.ts's Grade is the same shape, independently declared — content/ must not import economy/). */
+export type Grade = 1 | 2 | 3;
+
+export interface GearInstance {
+  readonly instanceId: string;
+  readonly archetypeId: WeaponArchetypeId | ArmorArchetypeId;
+  readonly slot: GearSlot;
+  readonly grade: Grade;
+  readonly displayName: string;
+}
+
+// ---------------------------------------------------------------------
 // Threat archetype (D5)
 // ---------------------------------------------------------------------
 

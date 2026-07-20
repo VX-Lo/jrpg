@@ -1,0 +1,29 @@
+# Armor archetypes (Phase 6.5) — same slot-composition shape as
+# weapons.toml, pointed at a second content pool. `slot_display` is pure
+# display labels (plating = physical-mitigation role, lining = magical-
+# mitigation role), no runtime logic — same "carried as plain labels
+# this phase" precedent as weapons.toml's striking/core.
+
+[[armor]]
+id = "armor:plate-helm"
+name = "Plate Helm"
+slot = "head"
+slot_display = { plating = "plate", lining = "padding" }
+
+[[armor]]
+id = "armor:hood"
+name = "Hood"
+slot = "head"
+slot_display = { plating = "leather cap", lining = "ward-stitching" }
+
+[[armor]]
+id = "armor:plate-cuirass"
+name = "Plate Cuirass"
+slot = "body"
+slot_display = { plating = "plate", lining = "padding" }
+
+[[armor]]
+id = "armor:robe"
+name = "Robe"
+slot = "body"
+slot_display = { plating = "layered cloth", lining = "ward-weave" }

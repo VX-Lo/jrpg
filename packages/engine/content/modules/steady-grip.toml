@@ -1,0 +1,10 @@
+# While-equipped: +2 STR. Additive on an unbounded primary stat — the
+# legal case rule 10 allows (a buff may add to a primary stat, never
+# multiply it).
+id = "module:steady-grip"
+name = "Steady Grip"
+
+[[grants]]
+target_variable = "STR"
+operation = "add"
+magnitude = 2

@@ -6,6 +6,7 @@
 
 import type { ContentPort } from "../content/index.js";
 import type { Ability, BuffableStat, Effect, PrimaryStat, TagId, TargetShape } from "../content/types.js";
+import { rollLootedGear } from "../content/gearInstance.js";
 import type { EventLogWriter } from "../log/index.js";
 import type { Rng } from "../rng/index.js";
 import { grantBoostForTurn, setBoostPressure, spendBoost, applyBreakDamage } from "./breakBoost.js";
@@ -306,6 +307,7 @@ function finalizeResult(
   enemies: readonly LiveCombatant[],
   tickCost: number,
   ctx: BattleContext,
+  band: number,
 ): BattleResult {
   const partyAvgLevel = party.reduce((s, p) => s + p.level, 0) / Math.max(1, party.length);
   const xpTotal = outcome === "party_win" ? enemies.reduce((s, e) => s + xpForEnemy(e, partyAvgLevel), 0) : 0;
@@ -320,11 +322,15 @@ function finalizeResult(
     finalBoost: p.boost,
   }));
   const gold = outcome === "party_win" ? enemies.reduce((s, e) => s + e.level * 5, 0) : 0;
+  const gear =
+    outcome === "party_win"
+      ? [rollLootedGear(ctx.content.listWeaponArchetypes(), ctx.content.listArmorArchetypes(), band, ctx.rng.substream("battle:gear-reward"), `gear:${enemies[0]?.id ?? "none"}`)]
+      : [];
   const bestiaryObservations = buildBestiaryObservations(enemies.filter((e) => e.scanned || e.koed), ctx.content);
   return {
     outcome,
     partyDeltas,
-    rewards: { gold, gear: [] },
+    rewards: { gold, gear },
     tickCost,
     log: ctx.log.toArray(),
     bestiaryObservations,
@@ -344,7 +350,7 @@ export function runBattle(request: BattleRequest, inputs: readonly BattleInput[]
 
   for (;;) {
     const outcome = checkOutcome(party, enemies);
-    if (outcome) return finalizeResult(outcome, party, enemies, tick - ctx.startTick, ctx);
+    if (outcome) return finalizeResult(outcome, party, enemies, tick - ctx.startTick, ctx, request.band ?? 1);
 
     const actor = nextActor([...party, ...enemies]);
     tick = actor.nextActionTick;

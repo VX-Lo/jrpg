@@ -5,6 +5,7 @@
 // bestiary observations. Same BattleResult shape as the full resolver.
 // ---------------------------------------------------------------------
 
+import { rollLootedGear } from "../content/gearInstance.js";
 import { AUTO_RESOLVE_THRESHOLD, BASE_ACTION_TICKS } from "../worldgen/config.js";
 import type { BattleContext } from "./resolver.js";
 import { avgStat, buildLiveState } from "./state.js";
@@ -50,6 +51,15 @@ export function autoResolveBattle(request: BattleRequest, ctx: BattleContext): B
   const xpTotal = enemies.reduce((sum, e) => sum + xpForEnemy(e, partyAvgLevel), 0);
   const xpPerMember = Math.floor(xpTotal / Math.max(1, party.length));
   const gold = enemies.reduce((sum, e) => sum + e.level * 5, 0);
+  const gear = [
+    rollLootedGear(
+      ctx.content.listWeaponArchetypes(),
+      ctx.content.listArmorArchetypes(),
+      request.band ?? 1,
+      ctx.rng.substream("battle:gear-reward"),
+      `gear:${enemies[0]?.id ?? "none"}`,
+    ),
+  ];
 
   const partyDeltas: readonly PartyMemberDelta[] = party.map((p) => ({
     id: p.id,
@@ -70,7 +80,7 @@ export function autoResolveBattle(request: BattleRequest, ctx: BattleContext): B
   return {
     outcome: "party_win",
     partyDeltas,
-    rewards: { gold, gear: [] },
+    rewards: { gold, gear },
     tickCost,
     log: ctx.log.toArray(),
     bestiaryObservations,

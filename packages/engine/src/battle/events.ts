@@ -17,13 +17,18 @@ export interface BattleReferenceableEventPayload {
   readonly magnitude: number;
 }
 
+function downedWhat(combatant: LiveCombatant): string {
+  if (combatant.side === "party") return "party-member-downed";
+  return combatant.isBoss ? "tier-boss-defeated" : "threat-defeated";
+}
+
 export function logCombatantDowned(log: EventLogWriter, tick: number, encounterId: string, combatant: LiveCombatant): void {
   const payload: BattleReferenceableEventPayload = {
     archetype: "battle-notable-event",
     encounterId,
     who: combatant.name,
     where: encounterId,
-    what: combatant.side === "party" ? "party-member-downed" : "threat-defeated",
+    what: downedWhat(combatant),
     magnitude: combatant.level,
   };
   log.append(tick, "battle:referenceable", payload);

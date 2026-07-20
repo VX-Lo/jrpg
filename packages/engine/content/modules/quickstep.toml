@@ -1,0 +1,9 @@
+# While-equipped: 10% cheaper action cost. Multiplicative on a bounded
+# registry variable — the legal case for a multiplicative modifier.
+id = "module:quickstep"
+name = "Quickstep"
+
+[[grants]]
+target_variable = "actionCostMult"
+operation = "multiply"
+magnitude = 0.9

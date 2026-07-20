@@ -7,6 +7,7 @@
 import type {
   Ability,
   AbilityId,
+  GearInstance,
   JobId,
   PrimaryStat,
   Row,
@@ -64,6 +65,8 @@ export interface EnemyCombatantRequest {
   /** Concrete ability objects — engine executes uniformly whether authored or generated (CLAUDE.md §1). */
   readonly abilities: readonly Ability[];
   readonly breakShieldMax: number;
+  /** Set by the caller from `Tier.bossNodeId`/`WorldNode.isBoss` — battle/ never reaches into worldgen itself. Threads into the `battle:referenceable` event's `what` (Phase 6 §6.4 listens for it to refresh the economy). */
+  readonly isBoss?: boolean;
 }
 
 export interface BattleRequest {
@@ -73,6 +76,8 @@ export interface BattleRequest {
   readonly encounterId: string;
   /** Whether the party has the tag equipped/known that matches an enemy's counterMaterial (soft gate, CLAUDE.md §8). Resolved by the caller, not the resolver — the resolver never inspects loadouts to derive it. */
   readonly counteredArchetypeIds: ReadonlySet<ThreatArchetypeId>;
+  /** Tier band, for the looted-gear grade roll only (CLAUDE.md §6.5.3) — not consumed anywhere else in battle/. Optional; defaults to band 1 (mostly-grade-1 loot) if omitted. */
+  readonly band?: number;
 }
 
 // ---------------------------------------------------------------------
@@ -120,7 +125,8 @@ export interface PartyMemberDelta {
 
 export interface BattleRewards {
   readonly gold: number;
-  readonly gear: readonly string[];
+  /** Real composed instances (Phase 6.5), not placeholders — see content/gearInstance.ts's rollLootedGear. */
+  readonly gear: readonly GearInstance[];
 }
 
 export interface BestiaryObservation {
@@ -218,4 +224,5 @@ export interface LiveCombatant {
   breakShieldCurrent: number;
   breakWindowUntilTick: number | null;
   scanned: boolean;
+  readonly isBoss?: boolean;
 }

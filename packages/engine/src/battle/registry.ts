@@ -133,6 +133,16 @@ export function pruneExpiredModifiers(actor: LiveCombatant, currentTick: number)
 }
 
 /**
+ * Removes every active modifier with the given `source`, regardless of
+ * expiry — the operation an unequip needs, since a while-equipped
+ * modifier (`durationTicks: null`, e.g. Defend or a gear Module) never
+ * expires on its own and must be explicitly removed (CLAUDE.md §6.5.2).
+ */
+export function removeModifiersBySource(actor: LiveCombatant, source: string): void {
+  actor.modifiers = actor.modifiers.filter((m) => m.source !== source);
+}
+
+/**
  * Resolves a variable's value: base, then every active modifier on that
  * actor for that variable — additives sum into the base, then
  * multiplicatives multiply the additive result — then clamp if bounded

@@ -77,6 +77,7 @@ function toLiveEnemy(enemy: EnemyCombatantRequest, startTick: number, countered:
     breakShieldCurrent: enemy.breakShieldMax,
     breakWindowUntilTick: null,
     scanned: false,
+    isBoss: enemy.isBoss,
   };
 }
 

@@ -2,12 +2,17 @@ import {
   PRIMARY_STATS,
   type Ability,
   type AbilityId,
+  type ArmorArchetype,
+  type ArmorArchetypeId,
+  type ArmorSlot,
   type BuffableStat,
   type DamageChannel,
   type Effect,
   type EffectParams,
   type Job,
   type JobId,
+  type Module,
+  type ModuleId,
   type PowerFormula,
   type PrimaryStat,
   type Reach,
@@ -107,6 +112,58 @@ export function validateWeapons(raw: unknown): WeaponArchetype[] {
     const core = requireString(slotDisplayRaw.core, c, "slot_display.core");
     return { id, name, reach, scalingStat, slotDisplay: { striking, core } };
   });
+}
+
+// ---------------------------------------------------------------------
+// Armor (Phase 6.5) — same array-of-tables shape as weapons.
+// ---------------------------------------------------------------------
+
+export function validateArmor(raw: unknown): ArmorArchetype[] {
+  const context = "armor.toml";
+  const list = requireArray((raw as { armor?: unknown })?.armor, context, "armor");
+  const seen = new Set<ArmorArchetypeId>();
+  return list.map((entry, i) => {
+    const c = `${context} armor[${i}]`;
+    const e = entry as Record<string, unknown>;
+    const id = requireString(e?.id, c, "id");
+    if (seen.has(id)) fail(c, `duplicate armor id "${id}"`);
+    seen.add(id);
+    const name = requireString(e?.name, c, "name");
+    const slot = requireOneOf<ArmorSlot>(e?.slot, ["head", "body"], c, "slot");
+    const slotDisplayRaw = e?.slot_display as Record<string, unknown> | undefined;
+    if (!slotDisplayRaw || typeof slotDisplayRaw !== "object") {
+      fail(c, `field "slot_display" must be a table with "plating" and "lining" string fields`);
+    }
+    const plating = requireString(slotDisplayRaw.plating, c, "slot_display.plating");
+    const lining = requireString(slotDisplayRaw.lining, c, "slot_display.lining");
+    return { id, name, slot, slotDisplay: { plating, lining } };
+  });
+}
+
+// ---------------------------------------------------------------------
+// Module (Phase 6.5) — one file per entity, same hot-load convention as
+// abilities. `targetVariable`/`operation`/`magnitude` are validated
+// STRUCTURALLY only here (non-empty string / "add"|"multiply" / number)
+// — the rule-10-aware check against the real registry variable set
+// happens in equipment/, which is allowed to import battle/registry.ts
+// (content/ must not).
+// ---------------------------------------------------------------------
+
+export function validateModule(raw: unknown, context: string): Module {
+  const r = raw as Record<string, unknown>;
+  const id = requireString(r?.id, context, "id") as ModuleId;
+  const c = `module "${id}" (${context})`;
+  const name = requireString(r?.name, c, "name");
+  const grantsRaw = requireArray(r?.grants, c, "grants");
+  const grants = grantsRaw.map((g, i) => {
+    const gc = `${c} grants[${i}]`;
+    const ge = g as Record<string, unknown>;
+    const targetVariable = requireString(ge?.target_variable, gc, "target_variable");
+    const operation = requireOneOf(ge?.operation, ["add", "multiply"] as const, gc, "operation");
+    const magnitude = requireNumber(ge?.magnitude, gc, "magnitude");
+    return { targetVariable, operation, magnitude };
+  });
+  return { id, name, grants };
 }
 
 // ---------------------------------------------------------------------

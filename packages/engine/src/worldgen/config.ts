@@ -511,3 +511,42 @@ export const DAMAGE_VARIANCE_UNCOUNTERED = 0.35;
 
 /** Flat effective-stat edge granted to an uncountered threat's counter-material bonus (CLAUDE.md §8). UNCALIBRATED. */
 export const UNCOUNTERED_STAT_EDGE = 0.15;
+
+// ---------------------------------------------------------------------
+// Phase 6 — economy
+//
+// Same calibration home as everything else. GRADE_MULTIPLIERS/
+// LOCAL_VARIANCE_HALF_WIDTH/REGION_MOD_STRENGTH/sellDepression/
+// buyPremium constants live in economy/pricing.ts instead (co-located
+// with the formula code that uses them, mirroring content/formula.ts's
+// JOB_LEVEL_BONUS_PER_LEVEL import-from-config pattern in reverse —
+// these are economy-local, not cross-module). Only cross-module/
+// worldgen-adjacent constants live here.
+// ---------------------------------------------------------------------
+
+/**
+ * Base chance a given good is included in a region's stocked subset,
+ * before the economicAxis weighting below. UNCALIBRATED.
+ */
+export const STOCK_INCLUSION_BASE_CHANCE = 0.35;
+
+/**
+ * How much economicAxis shifts a good's stocking chance in the direction
+ * its kind favors (extractive regions stock raw goods more readily,
+ * refining regions stock processed goods more readily, mixed regions are
+ * neutral) — same directional rule as `regionMod` in pricing.ts, applied
+ * to inclusion odds instead of price. UNCALIBRATED magnitude.
+ */
+export const STOCK_INCLUSION_AXIS_BONUS = 0.25;
+
+/** Stock quantity per stocked good = base + a seeded amount up to this span. UNCALIBRATED. */
+export const STOCK_QUANTITY_BASE = 10;
+export const STOCK_QUANTITY_VARIANCE_SPAN = 40;
+
+// ---------------------------------------------------------------------
+// Phase 6 — cargo capacity (rule 10: additive only against STR)
+// ---------------------------------------------------------------------
+
+/** cargoCapacity = CARGO_BASE + STR * CARGO_PER_STR — additive only, never multiplied by grade/tier/anything (CLAUDE.md §6.7). UNCALIBRATED. */
+export const CARGO_BASE = 20;
+export const CARGO_PER_STR = 2;

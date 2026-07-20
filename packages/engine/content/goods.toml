@@ -1,0 +1,699 @@
+# Phase 6 — economy goods. Base identity is FIXED authored content, not
+# generated (CLAUDE.md §6.1) — only the regional-adjective flavor layer
+# uses the grammar engine. 16 categories (8 raw, 8 processed), 6 goods
+# each = 96 total. Fixture-scale, not the design doc's full ~200-good
+# catalog (same "prove the mechanism" precedent as Phase 2's 4 kernels /
+# Phase 4.5's 81 chunks) — see CLAUDE.md Decisions log.
+#
+# base_price is a simple ascending-by-tier pattern per category
+# (raw: 5,10,15,20,25,30; processed: 15,27,39,51,63,75, roughly a
+# 2.5-3x value-add over the corresponding raw tier) — illustrative,
+# UNCALIBRATED, not a balance pass.
+
+# --- raw: ore ---
+[[goods]]
+id = "good:ore-iron"
+name = "Iron Ore"
+category = "ore"
+kind = "raw"
+base_price = 5
+
+[[goods]]
+id = "good:ore-copper"
+name = "Copper Ore"
+category = "ore"
+kind = "raw"
+base_price = 10
+
+[[goods]]
+id = "good:ore-tin"
+name = "Tin Ore"
+category = "ore"
+kind = "raw"
+base_price = 15
+
+[[goods]]
+id = "good:ore-silver"
+name = "Silver Ore"
+category = "ore"
+kind = "raw"
+base_price = 20
+
+[[goods]]
+id = "good:ore-black-iron"
+name = "Black Iron Ore"
+category = "ore"
+kind = "raw"
+base_price = 25
+
+[[goods]]
+id = "good:ore-gold"
+name = "Gold Ore"
+category = "ore"
+kind = "raw"
+base_price = 30
+
+# --- raw: timber ---
+[[goods]]
+id = "good:timber-oak"
+name = "Oak Log"
+category = "timber"
+kind = "raw"
+base_price = 5
+
+[[goods]]
+id = "good:timber-pine"
+name = "Pine Log"
+category = "timber"
+kind = "raw"
+base_price = 10
+
+[[goods]]
+id = "good:timber-ash"
+name = "Ash Log"
+category = "timber"
+kind = "raw"
+base_price = 15
+
+[[goods]]
+id = "good:timber-birch"
+name = "Birch Log"
+category = "timber"
+kind = "raw"
+base_price = 20
+
+[[goods]]
+id = "good:timber-ironwood"
+name = "Ironwood Log"
+category = "timber"
+kind = "raw"
+base_price = 25
+
+[[goods]]
+id = "good:timber-driftwood"
+name = "Driftwood"
+category = "timber"
+kind = "raw"
+base_price = 30
+
+# --- raw: hide ---
+[[goods]]
+id = "good:hide-deer"
+name = "Deer Hide"
+category = "hide"
+kind = "raw"
+base_price = 5
+
+[[goods]]
+id = "good:hide-boar"
+name = "Boar Hide"
+category = "hide"
+kind = "raw"
+base_price = 10
+
+[[goods]]
+id = "good:hide-wolf"
+name = "Wolf Hide"
+category = "hide"
+kind = "raw"
+base_price = 15
+
+[[goods]]
+id = "good:hide-bear"
+name = "Bear Hide"
+category = "hide"
+kind = "raw"
+base_price = 20
+
+[[goods]]
+id = "good:hide-serpent"
+name = "Serpent Hide"
+category = "hide"
+kind = "raw"
+base_price = 25
+
+[[goods]]
+id = "good:hide-ox"
+name = "Ox Hide"
+category = "hide"
+kind = "raw"
+base_price = 30
+
+# --- raw: fiber ---
+[[goods]]
+id = "good:fiber-flax"
+name = "Flax"
+category = "fiber"
+kind = "raw"
+base_price = 5
+
+[[goods]]
+id = "good:fiber-hemp"
+name = "Hemp"
+category = "fiber"
+kind = "raw"
+base_price = 10
+
+[[goods]]
+id = "good:fiber-wool"
+name = "Raw Wool"
+category = "fiber"
+kind = "raw"
+base_price = 15
+
+[[goods]]
+id = "good:fiber-cotton"
+name = "Raw Cotton"
+category = "fiber"
+kind = "raw"
+base_price = 20
+
+[[goods]]
+id = "good:fiber-silk-moss"
+name = "Silk-Moss"
+category = "fiber"
+kind = "raw"
+base_price = 25
+
+[[goods]]
+id = "good:fiber-reed"
+name = "Reed Fiber"
+category = "fiber"
+kind = "raw"
+base_price = 30
+
+# --- raw: herb ---
+[[goods]]
+id = "good:herb-nettle"
+name = "Nettle"
+category = "herb"
+kind = "raw"
+base_price = 5
+
+[[goods]]
+id = "good:herb-sage"
+name = "Sage"
+category = "herb"
+kind = "raw"
+base_price = 10
+
+[[goods]]
+id = "good:herb-moonleaf"
+name = "Moonleaf"
+category = "herb"
+kind = "raw"
+base_price = 15
+
+[[goods]]
+id = "good:herb-bloodroot"
+name = "Bloodroot"
+category = "herb"
+kind = "raw"
+base_price = 20
+
+[[goods]]
+id = "good:herb-fen-lily"
+name = "Fen Lily"
+category = "herb"
+kind = "raw"
+base_price = 25
+
+[[goods]]
+id = "good:herb-ashbloom"
+name = "Ashbloom"
+category = "herb"
+kind = "raw"
+base_price = 30
+
+# --- raw: fish ---
+[[goods]]
+id = "good:fish-trout"
+name = "Trout"
+category = "fish"
+kind = "raw"
+base_price = 5
+
+[[goods]]
+id = "good:fish-eel"
+name = "Eel"
+category = "fish"
+kind = "raw"
+base_price = 10
+
+[[goods]]
+id = "good:fish-pike"
+name = "Pike"
+category = "fish"
+kind = "raw"
+base_price = 15
+
+[[goods]]
+id = "good:fish-carp"
+name = "Carp"
+category = "fish"
+kind = "raw"
+base_price = 20
+
+[[goods]]
+id = "good:fish-silverfin"
+name = "Silverfin"
+category = "fish"
+kind = "raw"
+base_price = 25
+
+[[goods]]
+id = "good:fish-deepfin"
+name = "Deepfin"
+category = "fish"
+kind = "raw"
+base_price = 30
+
+# --- raw: grain ---
+[[goods]]
+id = "good:grain-wheat"
+name = "Wheat"
+category = "grain"
+kind = "raw"
+base_price = 5
+
+[[goods]]
+id = "good:grain-barley"
+name = "Barley"
+category = "grain"
+kind = "raw"
+base_price = 10
+
+[[goods]]
+id = "good:grain-oat"
+name = "Oat"
+category = "grain"
+kind = "raw"
+base_price = 15
+
+[[goods]]
+id = "good:grain-rye"
+name = "Rye"
+category = "grain"
+kind = "raw"
+base_price = 20
+
+[[goods]]
+id = "good:grain-millet"
+name = "Millet"
+category = "grain"
+kind = "raw"
+base_price = 25
+
+[[goods]]
+id = "good:grain-spelt"
+name = "Spelt"
+category = "grain"
+kind = "raw"
+base_price = 30
+
+# --- raw: gem ---
+[[goods]]
+id = "good:gem-quartz"
+name = "Quartz"
+category = "gem"
+kind = "raw"
+base_price = 5
+
+[[goods]]
+id = "good:gem-garnet"
+name = "Garnet"
+category = "gem"
+kind = "raw"
+base_price = 10
+
+[[goods]]
+id = "good:gem-opal"
+name = "Opal"
+category = "gem"
+kind = "raw"
+base_price = 15
+
+[[goods]]
+id = "good:gem-amber"
+name = "Amber"
+category = "gem"
+kind = "raw"
+base_price = 20
+
+[[goods]]
+id = "good:gem-jade"
+name = "Jade"
+category = "gem"
+kind = "raw"
+base_price = 25
+
+[[goods]]
+id = "good:gem-obsidian-shard"
+name = "Obsidian Shard"
+category = "gem"
+kind = "raw"
+base_price = 30
+
+# --- processed: ingot ---
+[[goods]]
+id = "good:ingot-iron"
+name = "Iron Ingot"
+category = "ingot"
+kind = "processed"
+base_price = 15
+
+[[goods]]
+id = "good:ingot-copper"
+name = "Copper Ingot"
+category = "ingot"
+kind = "processed"
+base_price = 27
+
+[[goods]]
+id = "good:ingot-tin"
+name = "Tin Ingot"
+category = "ingot"
+kind = "processed"
+base_price = 39
+
+[[goods]]
+id = "good:ingot-silver"
+name = "Silver Ingot"
+category = "ingot"
+kind = "processed"
+base_price = 51
+
+[[goods]]
+id = "good:ingot-black-iron"
+name = "Black Iron Ingot"
+category = "ingot"
+kind = "processed"
+base_price = 63
+
+[[goods]]
+id = "good:ingot-gold"
+name = "Gold Ingot"
+category = "ingot"
+kind = "processed"
+base_price = 75
+
+# --- processed: lumber ---
+[[goods]]
+id = "good:lumber-oak"
+name = "Oak Plank"
+category = "lumber"
+kind = "processed"
+base_price = 15
+
+[[goods]]
+id = "good:lumber-pine"
+name = "Pine Plank"
+category = "lumber"
+kind = "processed"
+base_price = 27
+
+[[goods]]
+id = "good:lumber-ash"
+name = "Ash Plank"
+category = "lumber"
+kind = "processed"
+base_price = 39
+
+[[goods]]
+id = "good:lumber-birch"
+name = "Birch Plank"
+category = "lumber"
+kind = "processed"
+base_price = 51
+
+[[goods]]
+id = "good:lumber-ironwood"
+name = "Ironwood Beam"
+category = "lumber"
+kind = "processed"
+base_price = 63
+
+[[goods]]
+id = "good:lumber-driftwood"
+name = "Driftwood Board"
+category = "lumber"
+kind = "processed"
+base_price = 75
+
+# --- processed: leather ---
+[[goods]]
+id = "good:leather-deer"
+name = "Deer Leather"
+category = "leather"
+kind = "processed"
+base_price = 15
+
+[[goods]]
+id = "good:leather-boar"
+name = "Boar Leather"
+category = "leather"
+kind = "processed"
+base_price = 27
+
+[[goods]]
+id = "good:leather-wolf"
+name = "Wolf Leather"
+category = "leather"
+kind = "processed"
+base_price = 39
+
+[[goods]]
+id = "good:leather-bear"
+name = "Bear Leather"
+category = "leather"
+kind = "processed"
+base_price = 51
+
+[[goods]]
+id = "good:leather-serpent"
+name = "Serpent Leather"
+category = "leather"
+kind = "processed"
+base_price = 63
+
+[[goods]]
+id = "good:leather-ox"
+name = "Ox Leather"
+category = "leather"
+kind = "processed"
+base_price = 75
+
+# --- processed: cloth ---
+[[goods]]
+id = "good:cloth-flax"
+name = "Flax Cloth"
+category = "cloth"
+kind = "processed"
+base_price = 15
+
+[[goods]]
+id = "good:cloth-hemp"
+name = "Hemp Cloth"
+category = "cloth"
+kind = "processed"
+base_price = 27
+
+[[goods]]
+id = "good:cloth-wool"
+name = "Wool Cloth"
+category = "cloth"
+kind = "processed"
+base_price = 39
+
+[[goods]]
+id = "good:cloth-cotton"
+name = "Cotton Cloth"
+category = "cloth"
+kind = "processed"
+base_price = 51
+
+[[goods]]
+id = "good:cloth-silk-moss"
+name = "Silk-Moss Weave"
+category = "cloth"
+kind = "processed"
+base_price = 63
+
+[[goods]]
+id = "good:cloth-reed"
+name = "Reed Weave"
+category = "cloth"
+kind = "processed"
+base_price = 75
+
+# --- processed: tincture ---
+[[goods]]
+id = "good:tincture-nettle"
+name = "Nettle Tincture"
+category = "tincture"
+kind = "processed"
+base_price = 15
+
+[[goods]]
+id = "good:tincture-sage"
+name = "Sage Tincture"
+category = "tincture"
+kind = "processed"
+base_price = 27
+
+[[goods]]
+id = "good:tincture-moonleaf"
+name = "Moonleaf Tincture"
+category = "tincture"
+kind = "processed"
+base_price = 39
+
+[[goods]]
+id = "good:tincture-bloodroot"
+name = "Bloodroot Tincture"
+category = "tincture"
+kind = "processed"
+base_price = 51
+
+[[goods]]
+id = "good:tincture-fen-lily"
+name = "Fen Lily Tincture"
+category = "tincture"
+kind = "processed"
+base_price = 63
+
+[[goods]]
+id = "good:tincture-ashbloom"
+name = "Ashbloom Tincture"
+category = "tincture"
+kind = "processed"
+base_price = 75
+
+# --- processed: preserve ---
+[[goods]]
+id = "good:preserve-trout"
+name = "Salted Trout"
+category = "preserve"
+kind = "processed"
+base_price = 15
+
+[[goods]]
+id = "good:preserve-eel"
+name = "Smoked Eel"
+category = "preserve"
+kind = "processed"
+base_price = 27
+
+[[goods]]
+id = "good:preserve-pike"
+name = "Pickled Pike"
+category = "preserve"
+kind = "processed"
+base_price = 39
+
+[[goods]]
+id = "good:preserve-carp"
+name = "Dried Carp"
+category = "preserve"
+kind = "processed"
+base_price = 51
+
+[[goods]]
+id = "good:preserve-silverfin"
+name = "Cured Silverfin"
+category = "preserve"
+kind = "processed"
+base_price = 63
+
+[[goods]]
+id = "good:preserve-deepfin"
+name = "Brined Deepfin"
+category = "preserve"
+kind = "processed"
+base_price = 75
+
+# --- processed: meal ---
+[[goods]]
+id = "good:meal-wheat"
+name = "Wheat Flour"
+category = "meal"
+kind = "processed"
+base_price = 15
+
+[[goods]]
+id = "good:meal-barley"
+name = "Barley Meal"
+category = "meal"
+kind = "processed"
+base_price = 27
+
+[[goods]]
+id = "good:meal-oat"
+name = "Oat Meal"
+category = "meal"
+kind = "processed"
+base_price = 39
+
+[[goods]]
+id = "good:meal-rye"
+name = "Rye Flour"
+category = "meal"
+kind = "processed"
+base_price = 51
+
+[[goods]]
+id = "good:meal-millet"
+name = "Millet Meal"
+category = "meal"
+kind = "processed"
+base_price = 63
+
+[[goods]]
+id = "good:meal-spelt"
+name = "Spelt Flour"
+category = "meal"
+kind = "processed"
+base_price = 75
+
+# --- processed: jewelry ---
+[[goods]]
+id = "good:jewelry-quartz"
+name = "Quartz Bead"
+category = "jewelry"
+kind = "processed"
+base_price = 15
+
+[[goods]]
+id = "good:jewelry-garnet"
+name = "Garnet Ring"
+category = "jewelry"
+kind = "processed"
+base_price = 27
+
+[[goods]]
+id = "good:jewelry-opal"
+name = "Opal Pendant"
+category = "jewelry"
+kind = "processed"
+base_price = 39
+
+[[goods]]
+id = "good:jewelry-amber"
+name = "Amber Charm"
+category = "jewelry"
+kind = "processed"
+base_price = 51
+
+[[goods]]
+id = "good:jewelry-jade"
+name = "Jade Bangle"
+category = "jewelry"
+kind = "processed"
+base_price = 63
+
+[[goods]]
+id = "good:jewelry-obsidian"
+name = "Obsidian Shard-Blade"
+category = "jewelry"
+kind = "processed"
+base_price = 75
