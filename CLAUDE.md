@@ -3,7 +3,7 @@
 ## Read this first. Update it last.
 
 ## Current state
-- **Phase:** 6.5 (equipment) COMPLETE locally, layered on Phase 6 (economy) COMPLETE locally — 20 new tests (2 Phase 6 gate + 10 Phase 6.5 gate + supporting), 173 total, `eslint .` + `tsc --noEmit` clean. **Not yet pushed / CI-confirmed** — push and confirm before Phase 7.
+- **Phase:** 6.5 (equipment) COMPLETE and CI-CONFIRMED, layered on Phase 6 (economy) COMPLETE and CI-CONFIRMED — commit `bd67d9f`, pushed to `main`, GitHub Actions green. 20 new tests (2 Phase 6 gate + 10 Phase 6.5 gate + supporting), 173 total, `eslint .` + `tsc --noEmit` clean. Phase 7 is next, gated on explicit go-ahead as usual.
 - **Gates:** all prior-phase gates remain green (re-run as the canary discipline requires). Phase 6 and 6.5 gate reports below.
 - **CI note:** the `gates` job logs one informational annotation, not a failure — `actions/checkout@v4`/`actions/setup-node@v4` are being forced onto Node 24 runners even though the workflow targets Node 20 (GitHub deprecated Node 20 runners). Worth a deliberate Node-version bump in `.github/workflows/ci.yml` next time CI config is touched, rather than leaving it silently forced.
 - **Debug tooling + a fixture-content pass** (throwaway, not a phase) closed Phase 5 Gate 7's original demo gap and surfaced one real resolver bug along the way — see "Debug tooling" section below.
@@ -166,5 +166,4 @@ Subtle rules where a "reasonable" change reintroduces a solved bug. Read before 
 
 ## Known issues
 - None outstanding for Phase 6/6.5 (see their Stubs entries — deliberate minimalism, not defects).
-- Phase 6/6.5 work is committed but **not yet pushed / CI-confirmed** — see Current state.
 - CI's `gates` job runs on Node 24 despite the workflow targeting Node 20 (GitHub-side forced deprecation, informational annotation only, not a failure) — see Current state.
