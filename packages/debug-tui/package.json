@@ -1,0 +1,25 @@
+{
+  "name": "@hollowmark/debug-tui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Throwaway terminal debug harness for hand-playtesting Hollowmark. Not a phase, not held to production polish. See CLAUDE.md 'Debug tooling'.",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "start": "tsx src/main.tsx"
+  },
+  "dependencies": {
+    "@hollowmark/engine": "*",
+    "ink": "^5.2.1",
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.0",
+    "ink-testing-library": "^4.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
+  }
+}

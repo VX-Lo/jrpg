@@ -10,7 +10,8 @@
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "lint": "eslint .",
-    "engine": "npm run --workspace packages/engine"
+    "engine": "npm run --workspace packages/engine",
+    "debug-tui": "npm run --workspace packages/debug-tui start"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

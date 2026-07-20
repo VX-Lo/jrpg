@@ -35,6 +35,32 @@ export interface BattleContext {
   readonly startTick: number;
 }
 
+/**
+ * Thrown instead of a plain Error specifically when the scripted input
+ * stream has run OUT (as opposed to the next input naming the wrong
+ * actor, which stays a plain Error — that's a real caller bug). Carries
+ * the live state at the exact pause point so an interactive caller
+ * (CLAUDE.md §21 — "a caller must compute whose turn is next before
+ * prompting") can render it and decide the next input without
+ * duplicating any resolver logic. Not part of the determinism contract:
+ * replaying with one more input appended reproduces everything up to
+ * this point bit-identically, same as any other prefix of `inputs`.
+ */
+export class AwaitingPartyInputError extends Error {
+  constructor(
+    readonly actorId: string,
+    readonly tick: number,
+    readonly party: readonly LiveCombatant[],
+    readonly enemies: readonly LiveCombatant[],
+  ) {
+    super(
+      `battle: awaiting scripted input for actor "${actorId}" at tick ${tick} — the determinism contract ` +
+        `requires an ordered BattleInput[] matching queue order exactly.`,
+    );
+    this.name = "AwaitingPartyInputError";
+  }
+}
+
 const DEFEND_DAMAGE_TAKEN_MULT = 0.5;
 const DEFEND_NEXT_ACTION_COST_MULT = 0.75;
 const SCAN_TICK_COST = 500;
@@ -361,11 +387,14 @@ export function runBattle(request: BattleRequest, inputs: readonly BattleInput[]
 
     // Party turn — consume the next scripted input.
     const input = inputs[inputIndex];
-    if (!input || input.actorId !== actor.id) {
+    if (!input) {
+      throw new AwaitingPartyInputError(actor.id, tick, party, enemies);
+    }
+    if (input.actorId !== actor.id) {
       throw new Error(
         `battle: expected next scripted input for actor "${actor.id}" at tick ${tick}, ` +
-          `got ${input ? `"${input.actorId}"` : "end of input stream"} — the determinism contract requires ` +
-          `an ordered BattleInput[] matching queue order exactly.`,
+          `got "${input.actorId}" — the determinism contract requires an ordered BattleInput[] matching ` +
+          `queue order exactly.`,
       );
     }
     inputIndex++;

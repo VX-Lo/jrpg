@@ -21,3 +21,7 @@ jobs:
         run: npm run build --workspace packages/engine
       - name: Test engine (Gates 1-5)
         run: npm run test --workspace packages/engine
+      - name: Typecheck + smoke-test debug-tui (throwaway tooling, not gated like the engine)
+        run: |
+          npm run build --workspace packages/debug-tui
+          npm run test --workspace packages/debug-tui

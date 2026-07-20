@@ -10,5 +10,5 @@ export * from "./ai.js";
 export * from "./state.js";
 export * from "./events.js";
 export * from "./predict.js";
-export { runBattle, type BattleContext } from "./resolver.js";
+export { runBattle, AwaitingPartyInputError, type BattleContext } from "./resolver.js";
 export { autoResolveBattle, computePowerRatio } from "./autoResolve.js";
