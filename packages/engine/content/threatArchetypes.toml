@@ -53,3 +53,40 @@ power_tier = 2
 scope = "world"
 row_line = "front"
 threat_behavior = "loyal"
+
+# ---------------------------------------------------------------------
+# Fixture Content pass (CLAUDE.md "Debug tooling") — a small demo trio
+# for the debug-tui Battle tab: one clearly fire-weak target (aquatic,
+# same existing weakness row everything else here uses) and two
+# archetypes with different threat_behavior so target selection
+# visibly differs between them in the log. Not new mechanics, just new
+# rows in an existing schema.
+# ---------------------------------------------------------------------
+
+[[archetypes]]
+id = "archetype:oilfin"
+name = "Oilfin"
+tags = ["aquatic"]
+power_tier = 1
+scope = "world"
+row_line = "front"
+threat_behavior = "loyal"
+
+[[archetypes]]
+id = "archetype:skitter-pack"
+name = "Skitter Pack"
+tags = ["poison"]
+power_tier = 1
+scope = "world"
+row_line = "front"
+row_attack = true
+threat_behavior = "opportunist"
+
+[[archetypes]]
+id = "archetype:mudlurk"
+name = "Mudlurk"
+tags = ["aquatic", "physical"]
+power_tier = 1
+scope = "world"
+row_line = "back"
+threat_behavior = "assassin"

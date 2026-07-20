@@ -15,7 +15,7 @@ import { logCombatantDowned } from "./events.js";
 import { addModifier, pruneExpiredModifiers, resolveVariable } from "./registry.js";
 import { eligibleTargets } from "./rows.js";
 import { avgStat, buildLiveState } from "./state.js";
-import { applyStatus, tickStatusesOnTurnStart } from "./status.js";
+import { activeGrantedTags, applyStatus, tickStatusesOnTurnStart } from "./status.js";
 import { decideEnemyAction } from "./ai.js";
 import type {
   AbilityInput,
@@ -189,7 +189,13 @@ function executeEffect(
       const params = effect.params as { powerFormula: Parameters<typeof rollDamage>[0]["powerFormula"]; channel?: "physical" | "magical" | "true" };
       const { value, hasMasteryMatch } = relevantStatForAbility(ability, actor, ctx.content, tick);
       for (const target of targets) {
-        const weaknessTags: readonly TagId[] = ctx.content.getWeaknessesFor(target.tags);
+        // A setup status (e.g. oiled) can grant a tag dynamically at runtime —
+        // merge it in alongside the target's authored tags so the weakness
+        // lookup sees it too (CLAUDE.md "Fixture content" decisions log:
+        // hasVulnerabilityTag existed but was never wired into damage
+        // resolution, so a status-granted tag could never trigger a weakness
+        // hit or deplete Break shield; this closes that gap).
+        const weaknessTags: readonly TagId[] = ctx.content.getWeaknessesFor([...target.tags, ...activeGrantedTags(target, tick)]);
         const roll = rollDamage({
           attacker: actor,
           target,

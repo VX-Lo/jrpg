@@ -11,7 +11,7 @@
 // ---------------------------------------------------------------------
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Box, Text, useInput } from "ink";
+import { Box, Text, useInput, useStdout } from "ink";
 import {
   loadEngineContent,
   createRng,
@@ -21,12 +21,14 @@ import {
   EventLogWriter,
   remainingTurnsForStatus,
   resolvedActionCost,
+  isBroken,
   BASE_ACTION_TICKS,
   eligibleTargets,
   type BattleRequest,
   type BattleInput,
   type LiveCombatant,
   type Ability,
+  type ContentPort,
   type Event,
 } from "../engine/access.js";
 import { debugPresetParty } from "../engine/party.js";
@@ -51,26 +53,41 @@ function queuePreview(actors: readonly LiveCombatant[]): LiveCombatant[] {
     .sort((a, b) => (a.nextActionTick !== b.nextActionTick ? a.nextActionTick - b.nextActionTick : a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }
 
-function formatEvent(e: Event): string {
+/**
+ * Human-readable, one line per resolved event, naming actor/target/effect
+ * by their display name rather than internal ids or raw ability ids —
+ * "no raw event JSON" (CLAUDE.md "Debug tooling" §2). `names`/`content`
+ * are read-only lookups; this never re-derives or mutates battle state.
+ */
+function formatEvent(e: Event, names: ReadonlyMap<string, string>, content: ContentPort): string {
   const p = e.payload as Record<string, unknown>;
+  const who = (id: unknown): string => (typeof id === "string" ? (names.get(id) ?? id) : String(id));
+  const abilityName = (id: unknown): string => {
+    if (typeof id !== "string") return String(id);
+    try {
+      return content.getAbility(id).name;
+    } catch {
+      return id;
+    }
+  };
   switch (e.type) {
     case "battle:damage":
-      return `[${e.tick}] ${p.actorId} used ${p.abilityId} on ${p.targetId} — ${p.amount} dmg${p.isCrit ? " (crit)" : ""}${p.isWeaknessHit ? " (weakness!)" : ""}`;
+      return `[${e.tick}] ${who(p.actorId)} hits ${who(p.targetId)} with ${abilityName(p.abilityId)} — ${p.amount} dmg${p.isCrit ? " (crit)" : ""}${p.isWeaknessHit ? " (weakness hit!)" : ""}`;
     case "battle:heal":
-      return `[${e.tick}] ${p.actorId} healed ${p.targetId} for ${p.amount} (${p.abilityId})`;
+      return `[${e.tick}] ${who(p.actorId)} heals ${who(p.targetId)} for ${p.amount} (${abilityName(p.abilityId)})`;
     case "battle:status":
-      return `[${e.tick}] ${p.actorId} applied ${p.status} to ${p.targetId}`;
+      return `[${e.tick}] ${who(p.actorId)} inflicts ${p.status} on ${who(p.targetId)}`;
     case "battle:dot":
-      return `[${e.tick}] ${p.actorId} takes ${p.amount} damage over time`;
+      return `[${e.tick}] ${who(p.actorId)} suffers ${p.amount} damage over time`;
     case "battle:break":
-      return `[${e.tick}] ${p.targetId} is BROKEN (window until tick ${p.windowUntilTick})`;
+      return `[${e.tick}] ${who(p.targetId)}'s Break shield shatters — vulnerable until tick ${p.windowUntilTick}`;
     case "battle:buff":
     case "battle:debuff":
-      return `[${e.tick}] ${p.actorId} ${e.type === "battle:buff" ? "buffed" : "debuffed"} ${p.targetId}'s ${p.stat} by ${p.magnitude}`;
+      return `[${e.tick}] ${who(p.actorId)} ${e.type === "battle:buff" ? "buffs" : "debuffs"} ${who(p.targetId)}'s ${p.stat} by ${p.magnitude}`;
     case "battle:shift_queue":
-      return `[${e.tick}] ${p.actorId} shifted ${p.targetId}'s queue ${p.direction} by ${p.amount}`;
+      return `[${e.tick}] ${who(p.actorId)} shifts ${who(p.targetId)}'s turn ${p.direction} by ${p.amount} ticks`;
     case "battle:scan":
-      return `[${e.tick}] ${p.actorId} scanned ${p.targetId}`;
+      return `[${e.tick}] ${who(p.actorId)} scans ${who(p.targetId)}`;
     case "battle:referenceable":
       return `[${e.tick}] ${p.who} — ${p.what}`;
     default:
@@ -92,6 +109,7 @@ function computeTargetPool(actor: LiveCombatant, party: readonly LiveCombatant[]
 }
 
 export function BattleTab({ seed, log }: BattleTabProps): React.ReactElement {
+  const { stdout } = useStdout();
   const content = useMemo(() => loadEngineContent(), []);
   const [level] = useState(5);
   const party = useMemo(() => debugPresetParty(content, level), [content, level]);
@@ -215,7 +233,15 @@ export function BattleTab({ seed, log }: BattleTabProps): React.ReactElement {
     }
   });
 
+  const nameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const p of party) map.set(p.id, p.name);
+    for (const en of encounter) map.set(en.id, en.name);
+    return map;
+  }, [party, encounter]);
+
   const tailEvents = step.events.slice(-12);
+  const logWidth = Math.max(40, (stdout?.columns ?? 80) - 4);
 
   return (
     <Box flexDirection="column">
@@ -228,9 +254,15 @@ export function BattleTab({ seed, log }: BattleTabProps): React.ReactElement {
       {step.status === "awaiting" && (
         <Box marginTop={1} flexDirection="column">
           <Text dimColor>upcoming: {queuePreview([...step.party, ...step.enemies]).slice(0, 6).map((c) => `${c.name}${c.id === step.actorId ? "*" : ""}`).join(" -> ")}</Text>
-          <Box marginTop={1}>
+          {/* Stacked, not side-by-side: two independent-height flex columns row-align by
+              vertical INDEX, not by combatant, so a status line on one side can land on
+              the same terminal row as an unrelated combatant on the other side and read
+              as if it belongs to them. Stacking removes the ambiguity entirely. */}
+          <Box marginTop={1} flexDirection="column">
             <CombatantColumn title="Party" combatants={step.party} tick={step.tick} />
-            <CombatantColumn title="Enemies" combatants={step.enemies} tick={step.tick} />
+            <Box marginTop={1}>
+              <CombatantColumn title="Enemies" combatants={step.enemies} tick={step.tick} />
+            </Box>
           </Box>
 
           <Box marginTop={1} flexDirection="column">
@@ -264,10 +296,12 @@ export function BattleTab({ seed, log }: BattleTabProps): React.ReactElement {
         <OutcomeScreen result={step.result} band={band} content={content} seed={seed} encounterId={encounterId} rewardRerollSeq={rewardRerollSeq} />
       )}
 
-      <Box marginTop={1} flexDirection="column" borderStyle="single" paddingX={1}>
+      <Box marginTop={1} flexDirection="column" borderStyle="single" paddingX={1} width={logWidth}>
         <Text dimColor>log</Text>
         {tailEvents.map((e, i) => (
-          <Text key={i}>{formatEvent(e)}</Text>
+          <Text key={i} wrap="wrap">
+            {formatEvent(e, nameById, content)}
+          </Text>
         ))}
       </Box>
     </Box>
@@ -276,7 +310,7 @@ export function BattleTab({ seed, log }: BattleTabProps): React.ReactElement {
 
 function CombatantColumn({ title, combatants, tick }: { title: string; combatants: readonly LiveCombatant[]; tick: number }): React.ReactElement {
   return (
-    <Box flexDirection="column" marginRight={4}>
+    <Box flexDirection="column">
       <Text bold>{title}</Text>
       {combatants.map((c) => (
         <Box key={c.id} flexDirection="column">
@@ -286,6 +320,12 @@ function CombatantColumn({ title, combatants, tick }: { title: string; combatant
             {c.side === "party" ? ` Boost ${c.boost}` : ""}
             {c.breakShieldMax > 0 ? ` Break ${c.breakShieldCurrent}/${c.breakShieldMax}` : ""}
           </Text>
+          {isBroken(c, tick) && c.breakWindowUntilTick !== null && (
+            <Text color="magenta">
+              {"  "}
+              BROKEN — window closes in {((c.breakWindowUntilTick - tick) / resolvedActionCost(c, BASE_ACTION_TICKS, tick)).toFixed(1)} turns
+            </Text>
+          )}
           {c.statuses.map((s) => {
             const cost = resolvedActionCost(c, BASE_ACTION_TICKS, tick);
             const turns = remainingTurnsForStatus(s, c, tick, cost);

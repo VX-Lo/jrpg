@@ -59,3 +59,10 @@ category = "domain"
 [[tags]]
 id = "silver"
 category = "domain"
+
+[[tags]]
+# Granted dynamically by the "oiled" status (vulnerability_tag shape) — see
+# battle/status.ts's activeGrantedTags. Also usable as an authored tag on
+# creatures that are just naturally slick, same as any other domain tag.
+id = "oiled"
+category = "domain"

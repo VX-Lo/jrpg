@@ -78,6 +78,19 @@ export function hasVulnerabilityTag(actor: LiveCombatant, tag: TagId, currentTic
   return actor.statuses.some((s) => s.shape === "vulnerability_tag" && s.grantsTag === tag && currentTick < s.expiresAtTick);
 }
 
+/**
+ * Every tag currently granted to `actor` by an active vulnerability_tag
+ * status (e.g. "oiled" granting the "oiled" tag). A setup status can only
+ * make a target register as weak to something it wasn't authored with if
+ * this gets merged into the weakness lookup at damage-resolution time —
+ * see resolver.ts's "damage" effect case.
+ */
+export function activeGrantedTags(actor: LiveCombatant, currentTick: number): readonly TagId[] {
+  return actor.statuses
+    .filter((s) => s.shape === "vulnerability_tag" && s.grantsTag !== undefined && currentTick < s.expiresAtTick)
+    .map((s) => s.grantsTag as TagId);
+}
+
 export interface StatusTickResult {
   readonly skipTurn: boolean;
   readonly dotDamage: number;

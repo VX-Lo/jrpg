@@ -14,3 +14,13 @@ weakness = "frost"
 [[weaknesses]]
 tag = "aquatic"
 weakness = "fire"
+
+[[weaknesses]]
+# The oiled+fire combo the CTB design was built around (Fixture Content
+# pass, CLAUDE.md "Debug tooling"). "oiled" here is the tag the "oiled"
+# status grants dynamically (battle/status.ts's activeGrantedTags,
+# merged into the weakness lookup by resolver.ts) — a target doesn't
+# need to be authored aquatic/ashborn to become fire-weak, applying the
+# status is what does it.
+tag = "oiled"
+weakness = "fire"

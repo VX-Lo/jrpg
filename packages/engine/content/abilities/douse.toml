@@ -1,0 +1,23 @@
+# apply_status primitive, fire. Closes Phase 5 Gate 7's original demo
+# gap — no fixture content applied "oiled" before this, and nothing
+# merged oiled's granted tag into the weakness lookup either (see
+# resolver.ts's "damage" effect case and CLAUDE.md "Debug tooling"
+# Decisions log). Reachable by Mage via tag overlap with its ("fire")
+# allowed_tags, no jobs.toml change needed — a pyromancer priming a
+# target to burn fits the kit.
+#
+# base_magnitude (0.6 -> 60% more damage taken while active) and
+# base_duration are illustrative, sized to make the damageTakenMult
+# bump AND the oiled+fire weakness hit both read clearly in a short
+# demo fight — NOT a calibration pass.
+id = "ability:douse"
+name = "Douse"
+tags = ["fire"]
+primary_domain_tag = "fire"
+target_shape = "one"
+tick_cost = 80
+resource_cost = 6
+
+[[effects]]
+primitive = "apply_status"
+params = { status = "oiled", base_duration = 2500, base_magnitude = 0.6 }

@@ -1,0 +1,19 @@
+# apply_status primitive, martial. Closes Phase 5 Gate 7's original
+# demo gap — no fixture content applied "slow" before this (Fixture
+# Content pass, CLAUDE.md "Debug tooling"). Warrior signature-adjacent:
+# reachable via tag overlap with warrior's ("martial") allowed_tags, no
+# jobs.toml change needed.
+#
+# base_duration/base_magnitude are illustrative, sized to make the
+# tempo hit obvious in a short demo fight — NOT a calibration pass.
+id = "ability:hamstring"
+name = "Hamstring"
+tags = ["martial"]
+primary_domain_tag = "martial"
+target_shape = "one"
+tick_cost = 90
+resource_cost = 4
+
+[[effects]]
+primitive = "apply_status"
+params = { status = "slow", base_duration = 3000, base_magnitude = 700 }
